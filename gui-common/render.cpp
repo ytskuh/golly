@@ -92,8 +92,8 @@ unsigned char pxldata[maxbytes];
 #else
     // the following 2 macros don't need to do anything because we've already
     // changed the viewport coordinate system to what Golly wants
-    #define XCOORD(x) x
-    #define YCOORD(y) y
+    #define XCOORD(x) static_cast<GLfloat>(x)
+    #define YCOORD(y) static_cast<GLfloat>(y)
 
     // fixed texture coordinates used by glTexCoordPointer
     const GLshort texture_coordinates[] = { 0,0, 1,0, 0,1, 1,1 };
@@ -372,10 +372,10 @@ void DrawRGBAData(unsigned char* rgbadata, int x, int y, int w, int h, int scale
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
     #else
         GLfloat vertices[] = {
-            x,   y,
-            x+w, y,
-            x,   y+h,
-            x+w, y+h,
+            static_cast<GLfloat>(x),   static_cast<GLfloat>(y),
+            static_cast<GLfloat>(x+w), static_cast<GLfloat>(y),
+            static_cast<GLfloat>(x),   static_cast<GLfloat>(y+h),
+            static_cast<GLfloat>(x+w), static_cast<GLfloat>(y+h),
         };
         glVertexPointer(2, GL_FLOAT, 0, vertices);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -948,8 +948,8 @@ void DrawGridLines(int wd, int ht)
                 glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
                 glEnableVertexAttribArray(positionLoc);
             #else
-                GLfloat points[] = {   -0.5, v-0.5,
-                                     wd+0.5, v-0.5 };
+                GLfloat points[] = { -0.5,                         static_cast<GLfloat>(v-0.5),
+                                     static_cast<GLfloat>(wd+0.5), static_cast<GLfloat>(v-0.5) };
                 glVertexPointer(2, GL_FLOAT, 0, points);
             #endif
             glDrawArrays(GL_LINES, 0, 2);
@@ -969,8 +969,8 @@ void DrawGridLines(int wd, int ht)
                 glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
                 glEnableVertexAttribArray(positionLoc);
             #else
-                GLfloat points[] = { h-0.5,   -0.5,
-                                     h-0.5, ht+0.5 };
+                GLfloat points[] = { static_cast<GLfloat>(h-0.5),                        -0.5,
+                                     static_cast<GLfloat>(h-0.5), static_cast<GLfloat>(ht+0.5) };
                 glVertexPointer(2, GL_FLOAT, 0, points);
             #endif
             glDrawArrays(GL_LINES, 0, 2);
@@ -1005,8 +1005,8 @@ void DrawGridLines(int wd, int ht)
                     glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
                     glEnableVertexAttribArray(positionLoc);
                 #else
-                    GLfloat points[] = {   -0.5, v-0.5,
-                                         wd+0.5, v-0.5 };
+                    GLfloat points[] = {                        -0.5,  static_cast<GLfloat>(v-0.5),
+                                         static_cast<GLfloat>(wd+0.5), static_cast<GLfloat>(v-0.5) };
                     glVertexPointer(2, GL_FLOAT, 0, points);
                 #endif
                 glDrawArrays(GL_LINES, 0, 2);
@@ -1026,8 +1026,8 @@ void DrawGridLines(int wd, int ht)
                     glVertexAttribPointer(positionLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
                     glEnableVertexAttribArray(positionLoc);
                 #else
-                    GLfloat points[] = { h-0.5,   -0.5,
-                                         h-0.5, ht+0.5 };
+                    GLfloat points[] = { static_cast<GLfloat>(h-0.5),                        -0.5,
+                                         static_cast<GLfloat>(h-0.5), static_cast<GLfloat>(ht+0.5) };
                     glVertexPointer(2, GL_FLOAT, 0, points);
                 #endif
                 glDrawArrays(GL_LINES, 0, 2);

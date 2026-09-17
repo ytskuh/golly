@@ -117,36 +117,6 @@ const int UNNAMED_ROW = NUM_ROWS - 1;
 
 // -----------------------------------------------------------------------------
 
-static void ConvertOldRules()
-{
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSString *rdir = [NSString stringWithCString:userrules.c_str() encoding:NSUTF8StringEncoding];
-    NSDirectoryEnumerator *dirEnum = [fm enumeratorAtPath:rdir];
-    NSString *path;
-    std::list<std::string> deprecated, keeprules;
-    
-    while (path = [dirEnum nextObject]) {
-        std::string filename = [path cStringUsingEncoding:NSUTF8StringEncoding];
-        if (IsRuleFile(filename)) {
-            if (EndsWith(filename,".rule")) {
-                // .rule file exists, so tell CreateRuleFiles not to change it
-                keeprules.push_back(filename);
-            } else {
-                // this is a deprecated .table/tree/colors/icons file
-                deprecated.push_back(filename);
-            }
-        }
-    }
-
-    if (deprecated.size() > 0) {
-        // convert deprecated files into new .rule files (if not in keeprules)
-        // and then delete all the deprecated files
-        CreateRuleFiles(deprecated, keeprules);
-    }
-}
-
-// -----------------------------------------------------------------------------
-
 static void CreateRuleLinks(std::string& htmldata, const std::string& dir,
                             const std::string& prefix, const std::string& title, bool candelete)
 {
@@ -203,9 +173,6 @@ static void CreateRuleLinks(std::string& htmldata, const std::string& dir,
         // first check for any .rule/tree/table files in Documents
         // (created by iTunes file sharing) and move them into Documents/Rules/
         MoveSharedFiles();
-        
-        // now convert any .tree/table files to .rule files
-        ConvertOldRules();
         
         // create html data with links to the user's .rule files and Golly's supplied .rule files
         std::string htmldata;
