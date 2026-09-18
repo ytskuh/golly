@@ -22,6 +22,7 @@
 
 #import "PatternViewController.h"   // for PauseGenerating, ResumeGenerating, StopIfGenerating
 #import "PatternView.h"
+#import "GollyAppDelegate.h"        // for CurrentViewController
 
 @implementation PatternView
 
@@ -277,47 +278,61 @@ static int startx, starty;
 
 // -----------------------------------------------------------------------------
 
-static UIActionSheet *selsheet;
+static NSInteger globalButton;
 
 - (void)doSelectionAction
 {
-    selsheet = [[UIActionSheet alloc]
-        initWithTitle:nil
-        delegate:self
-        cancelButtonTitle:nil
-        destructiveButtonTitle:nil
-        otherButtonTitles:
-        @"Remove",
-        @"Cut",
-        @"Copy",
-        @"Clear",
-        @"Clear Outside",
-        @"Shrink",
-        @"Fit",
-        [NSString stringWithFormat:@"Random Fill (%d%%)", randomfill],
-        @"Flip Top-Bottom",
-        @"Flip Left-Right",
-        @"Rotate Clockwise",
-        @"Rotate Anticlockwise",
-        @"Advance",
-        @"Advance Outside",
-        nil];
+    UIAlertController *sheet = [UIAlertController
+        alertControllerWithTitle:nil
+        message:nil
+        preferredStyle:UIAlertControllerStyleActionSheet];
+
+    NSArray<NSString *> *titles = @[
+        @"Remove", @"Cut", @"Copy", @"Clear", @"Clear Outside",
+        @"Shrink", @"Fit",
+        [NSString stringWithFormat:@"Random Fill (%ld%%)", (long)randomfill],
+        @"Flip Top-Bottom", @"Flip Left-Right",
+        @"Rotate Clockwise", @"Rotate Anticlockwise",
+        @"Advance", @"Advance Outside"
+    ];
     
-    [selsheet showInView:self];
+    UIViewController *presenter = CurrentViewController();
+
+    for (NSInteger i = 0; i < titles.count; i++) {
+        NSString *title = titles[i];
+        [sheet addAction:[UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [presenter dismissViewControllerAnimated:YES completion:^{
+                globalButton = i;
+                [self doDelayedSelection];
+            }];
+        }]];
+    }
+
+    // add Cancel item (iPhone only)
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    sheet.popoverPresentationController.sourceView = self; // a UIView
+    sheet.popoverPresentationController.sourceRect = self.bounds;
+    // center sheet in view
+    sheet.popoverPresentationController.sourceRect =
+        CGRectMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds), 0, 0);
+    sheet.popoverPresentationController.permittedArrowDirections = 0;
+    
+    [presenter presentViewController:sheet animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
-static UIActionSheet *pastesheet;
-
 - (void)doPasteAction
 {
-    pastesheet = [[UIActionSheet alloc]
-        initWithTitle:nil
-        delegate:self
-        cancelButtonTitle:nil
-        destructiveButtonTitle:nil
-        otherButtonTitles:
+    UIAlertController *sheet = [UIAlertController
+        alertControllerWithTitle:nil
+        message:nil
+        preferredStyle:UIAlertControllerStyleActionSheet];
+
+    NSArray<NSString *> *titles = @[
         @"Abort",
         [NSString stringWithFormat:@"Paste (%@)",
             [NSString stringWithCString:GetPasteMode() encoding:NSUTF8StringEncoding]],
@@ -326,75 +341,84 @@ static UIActionSheet *pastesheet;
         @"Flip Left-Right",
         @"Rotate Clockwise",
         @"Rotate Anticlockwise",
-        nil];
+    ];
     
-    [pastesheet showInView:self];
-}
+    UIViewController *presenter = CurrentViewController();
 
-// -----------------------------------------------------------------------------
-
-static UIActionSheet *globalSheet;
-static NSInteger globalButton;
-
-- (void)doDelayedAction
-{
-    if (globalSheet == selsheet) {
-        if (generating && globalButton >= 1 && globalButton <= 13 &&
-            globalButton != 2 && globalButton != 5 && globalButton != 6) {
-            // temporarily stop generating for all actions except Remove, Copy, Shrink, Fit
-            PauseGenerating();
-            if (event_checker > 0) {
-                // try again after a short delay that gives time for NextGeneration() to terminate
-                [self performSelector:@selector(doDelayedAction) withObject:nil afterDelay:0.01];
-                return;
-            }
-        }
-        switch (globalButton) {
-            case 0:  RemoveSelection(); break;                      // WARNING: above test assumes Remove is index 0
-            case 1:  CutSelection(); break;
-            case 2:  CopySelection(); break;                        // WARNING: above test assumes Copy is index 2
-            case 3:  ClearSelection(); break;
-            case 4:  ClearOutsideSelection(); break;
-            case 5:  ShrinkSelection(false); break;                 // WARNING: above test assumes Shrink is index 5
-            case 6:  FitSelection(); break;                         // WARNING: above test assumes Fit is index 6
-            case 7:  RandomFill(); break;
-            case 8:  FlipSelection(true); break;
-            case 9:  FlipSelection(false); break;
-            case 10: RotateSelection(true); break;
-            case 11: RotateSelection(false); break;
-            case 12: currlayer->currsel.Advance(); break;
-            case 13: currlayer->currsel.AdvanceOutside(); break;    // WARNING: above test assumes 13 is last index
-            default: break;
-        }
-        ResumeGenerating();
-        
-    } else if (globalSheet == pastesheet) {
-        switch (globalButton) {
-            case 0:  AbortPaste(); break;
-            case 1:  DoPaste(false); break;
-            case 2:  DoPaste(true); break;
-            case 3:  FlipPastePattern(true); break;
-            case 4:  FlipPastePattern(false); break;
-            case 5:  RotatePastePattern(true); break;
-            case 6:  RotatePastePattern(false); break;
-            default: break;
-        }
-        UpdateEverything();
+    for (NSInteger i = 0; i < titles.count; i++) {
+        NSString *title = titles[i];
+        [sheet addAction:[UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [presenter dismissViewControllerAnimated:YES completion:^{
+                globalButton = i;
+                [self doDelayedPaste];
+            }];
+        }]];
     }
+
+    // add Cancel item (iPhone only)
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+
+    sheet.popoverPresentationController.sourceView = self; // a UIView
+    sheet.popoverPresentationController.sourceRect = self.bounds;
+    // center sheet in view
+    sheet.popoverPresentationController.sourceRect =
+        CGRectMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds), 0, 0);
+    sheet.popoverPresentationController.permittedArrowDirections = 0;
+
+    [presenter presentViewController:sheet animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
-// called when the user selects an option in a UIActionSheet
-
-- (void)actionSheet:(UIActionSheet *)sheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)doDelayedSelection
 {
-    // user interaction is disabled at this moment, which is a problem if Warning or BeginProgress
-    // gets called (their OK/Cancel buttons won't work) so we have to call the appropriate
-    // action code AFTER this callback has finished and user interaction restored
-    globalSheet = sheet;
-    globalButton = buttonIndex;
-    [self performSelector:@selector(doDelayedAction) withObject:nil afterDelay:0.01];
+    if (generating && globalButton >= 1 && globalButton <= 13 &&
+        globalButton != 2 && globalButton != 5 && globalButton != 6) {
+        // temporarily stop generating for all actions except Remove, Copy, Shrink, Fit
+        PauseGenerating();
+        if (event_checker > 0) {
+            // try again after a short delay that gives time for NextGeneration() to terminate
+            [self performSelector:@selector(doDelayedSelection) withObject:nil afterDelay:0.01];
+            return;
+        }
+    }
+    switch (globalButton) {
+        case 0:  RemoveSelection(); break;                      // WARNING: above test assumes Remove is index 0
+        case 1:  CutSelection(); break;
+        case 2:  CopySelection(); break;                        // WARNING: above test assumes Copy is index 2
+        case 3:  ClearSelection(); break;
+        case 4:  ClearOutsideSelection(); break;
+        case 5:  ShrinkSelection(false); break;                 // WARNING: above test assumes Shrink is index 5
+        case 6:  FitSelection(); break;                         // WARNING: above test assumes Fit is index 6
+        case 7:  RandomFill(); break;
+        case 8:  FlipSelection(true); break;
+        case 9:  FlipSelection(false); break;
+        case 10: RotateSelection(true); break;
+        case 11: RotateSelection(false); break;
+        case 12: currlayer->currsel.Advance(); break;
+        case 13: currlayer->currsel.AdvanceOutside(); break;    // WARNING: above test assumes 13 is last index
+        default: break;
+    }
+    ResumeGenerating();
+}
+
+// -----------------------------------------------------------------------------
+
+- (void)doDelayedPaste
+{
+    switch (globalButton) {
+        case 0:  AbortPaste(); break;
+        case 1:  DoPaste(false); break;
+        case 2:  DoPaste(true); break;
+        case 3:  FlipPastePattern(true); break;
+        case 4:  FlipPastePattern(false); break;
+        case 5:  RotatePastePattern(true); break;
+        case 6:  RotatePastePattern(false); break;
+        default: break;
+    }
+    UpdateEverything();
 }
 
 // -----------------------------------------------------------------------------

@@ -256,39 +256,51 @@ static bool keepalgoindex = false;
 
 // -----------------------------------------------------------------------------
 
+static NSInteger globalAlgoIndex;
+
 - (IBAction)changeAlgorithm:(id)sender
 {
-    UIActionSheet *sheet = [[UIActionSheet alloc]
-                            initWithTitle:nil
-                            delegate:self
-                            cancelButtonTitle:nil
-                            destructiveButtonTitle:nil
-                            otherButtonTitles:nil];
-    
-    for (int i=0; i<NumAlgos(); i++) {
-        [sheet addButtonWithTitle:[NSString stringWithCString:GetAlgoName(i) encoding:NSUTF8StringEncoding]];
+    UIAlertController *sheet = [UIAlertController
+        alertControllerWithTitle:nil
+        message:nil
+        preferredStyle:UIAlertControllerStyleActionSheet];
+
+    for (int i = 0; i < NumAlgos(); i++) {
+        NSString *title = [NSString stringWithCString:GetAlgoName(i) encoding:NSUTF8StringEncoding];
+        [sheet addAction:[UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            globalAlgoIndex = i;
+            void (^finish)(void) = ^{ [self algoSelected:title]; };
+            if (self.presentedViewController != nil) {
+                [self dismissViewControllerAnimated:YES completion:finish];
+            } else {
+                finish();
+            }
+        }]];
     }
-    
-    [sheet showFromRect:algoButton.frame inView:algoButton.superview animated:NO];
+
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                                style:UIAlertActionStyleCancel
+                                              handler:nil]];
+
+    sheet.popoverPresentationController.sourceView = algoButton.superview;
+    sheet.popoverPresentationController.sourceRect = algoButton.frame;
+
+    [self presentViewController:sheet animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
-static NSInteger globalButton;
-
 - (void)doDelayedAction
 {
-    if (globalButton >= 0 && globalButton < NumAlgos()) {
+    if (globalAlgoIndex >= 0 && globalAlgoIndex < NumAlgos()) {
 
         // save current location
         curroffset[algoindex] = htmlView.scrollView.contentOffset;
         
         // save chosen algo for later use
-        algoindex = (algo_type)globalButton;
-        
-        // display the chosen algo name
-        [algoButton setTitle:[NSString stringWithCString:GetAlgoName(algoindex) encoding:NSUTF8StringEncoding]
-                    forState:UIControlStateNormal];
+        algoindex = (algo_type)globalAlgoIndex;
         
         // display help for chosen algo
         [self showAlgoHelp];
@@ -325,15 +337,12 @@ static NSInteger globalButton;
 
 // -----------------------------------------------------------------------------
 
-// called when the user selects an item from UIActionSheet created in changeAlgorithm
-
-- (void)actionSheet:(UIActionSheet *)sheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)algoSelected:(NSString *)title
 {
-    // user interaction is disabled at this moment, which is a problem if Warning gets called
-    // (the OK button won't work) so we have to call the appropriate action code AFTER this
-    // callback has finished and user interaction restored
-    globalButton = buttonIndex;
-    [self performSelector:@selector(doDelayedAction) withObject:nil afterDelay:0.01];
+    // called when the user picks an algorithm in changeAlgorithm
+    [algoButton setTitle:title forState:UIControlStateNormal];
+
+    [self doDelayedAction];
 }
 
 // -----------------------------------------------------------------------------

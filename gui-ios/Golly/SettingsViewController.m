@@ -125,28 +125,45 @@ static int oldhashmem;      // detect if user changed maxhashmem
 
 - (IBAction)changePasteMode:(id)sender
 {
-    UIActionSheet *sheet = [[UIActionSheet alloc]
-                            initWithTitle:nil
-                            delegate:self
-                            cancelButtonTitle:nil
-                            destructiveButtonTitle:nil
-                            otherButtonTitles: @"AND", @"COPY", @"OR", @"XOR", nil];
-    
-    [sheet showFromRect:modeButton.frame inView:modeButton.superview animated:NO];
+    UIAlertController *sheet = [UIAlertController
+        alertControllerWithTitle:nil
+        message:nil
+        preferredStyle:UIAlertControllerStyleActionSheet];
+
+    NSArray<NSString *> *titles = @[@"AND", @"COPY", @"OR", @"XOR"];
+
+    for (NSString *title in titles) {
+        [sheet addAction:[UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [self dismissViewControllerAnimated:YES completion:^{
+                [self pasteModeSelected:title];
+            }];
+        }]];
+    }
+
+    // note that this Cancel item will only appear on an iPhone and not on an iPad
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                              style:UIAlertActionStyleCancel
+                                            handler:nil]];
+
+    sheet.popoverPresentationController.sourceView = modeButton.superview;
+    sheet.popoverPresentationController.sourceRect = modeButton.frame;
+
+    [self presentViewController:sheet animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
-- (void)actionSheet:(UIActionSheet *)sheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)pasteModeSelected:(NSString *)title
 {
-    // called when the user selects an option from UIActionSheet created in changePasteMode
-    switch (buttonIndex) {
-        case 0:  [modeButton setTitle:@"AND"  forState:UIControlStateNormal]; pmode = And;  break;
-        case 1:  [modeButton setTitle:@"COPY" forState:UIControlStateNormal]; pmode = Copy; break;
-        case 2:  [modeButton setTitle:@"OR"   forState:UIControlStateNormal]; pmode = Or;   break;
-        case 3:  [modeButton setTitle:@"XOR"  forState:UIControlStateNormal]; pmode = Xor;  break;
-        default: break;
-    }
+    // called when the user picks an option in changePasteMode
+    [modeButton setTitle:title forState:UIControlStateNormal];
+
+    if ([title isEqualToString:@"AND"])       pmode = And;
+    else if ([title isEqualToString:@"COPY"]) pmode = Copy;
+    else if ([title isEqualToString:@"OR"])   pmode = Or;
+    else if ([title isEqualToString:@"XOR"])  pmode = Xor;
 }
 
 // -----------------------------------------------------------------------------

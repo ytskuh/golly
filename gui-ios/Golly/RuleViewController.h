@@ -5,9 +5,8 @@
 
 // This view controller is used when the Pattern tab's Rule button is tapped.
 
-@interface RuleViewController : UIViewController <UIActionSheetDelegate, UITextFieldDelegate,
-                                                  UIPickerViewDelegate, UIPickerViewDataSource,
-                                                  UIWebViewDelegate>
+@interface RuleViewController : UIViewController <UITextFieldDelegate, UIWebViewDelegate,
+                                                  UIPickerViewDelegate, UIPickerViewDataSource>
 {
     IBOutlet UIButton *algoButton;
     IBOutlet UITextField *ruleText;

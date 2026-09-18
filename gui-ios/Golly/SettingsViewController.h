@@ -5,7 +5,7 @@
 
 // This is the view controller for the Settings tab.
 
-@interface SettingsViewController : UIViewController <UIActionSheetDelegate, UITextFieldDelegate>
+@interface SettingsViewController : UIViewController <UITextFieldDelegate>
 {
     IBOutlet UIButton *modeButton;
     IBOutlet UITextField *percentageText;

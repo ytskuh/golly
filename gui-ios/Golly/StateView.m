@@ -204,11 +204,4 @@ void DrawOneIcon(CGContextRef context, int x, int y, gBitmapPtr icon,
 
 // -----------------------------------------------------------------------------
 
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
-{
-    statePopover = nil;
-}
-
-// -----------------------------------------------------------------------------
-
 @end
