@@ -9,6 +9,41 @@
 #import "HelpViewController.h"
 #import "GollyAppDelegate.h"
 
+// -----------------------------------------------------------------------------
+
+// on iOS 18+ we need to force tab bar to bottom of screen
+
+@interface BottomTabBarController : UITabBarController
+@end
+
+@implementation BottomTabBarController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    [self forceCompactTraitForBottomTabBar];
+}
+
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    // Re-apply on every layout pass — the system can reset this on rotation.
+    [self forceCompactTraitForBottomTabBar];
+}
+
+- (void)forceCompactTraitForBottomTabBar
+{
+    if (@available(iOS 18.0, *)) {
+        if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+            self.traitOverrides.horizontalSizeClass = UIUserInterfaceSizeClassCompact;
+        }
+    }
+}
+
+@end
+
+// -----------------------------------------------------------------------------
+
 @implementation GollyAppDelegate
 
 @synthesize window = _window;
@@ -29,7 +64,7 @@ static UITabBarController *tabBarController = nil;      // for SwitchToPatternTa
     UIViewController *vc2 = [[SettingsViewController alloc] initWithNibName:nil bundle:nil];
     UIViewController *vc3 = [[HelpViewController alloc] initWithNibName:nil bundle:nil];
     
-    tabBarController = [[UITabBarController alloc] init];
+    tabBarController = [[BottomTabBarController alloc] init];
     tabBarController.viewControllers = [NSArray arrayWithObjects:vc0, vc1, vc2, vc3, nil];
     
     self.window.rootViewController = tabBarController;
