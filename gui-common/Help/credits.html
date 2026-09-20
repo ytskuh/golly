@@ -66,7 +66,9 @@ and for making its patterns available to Golly users via an
 <a href="get:https://conwaylife.com/golly.html">online archive</a>.
 
 <script type="text/javascript">
-    if ( navigator.userAgent.match(/iPad|iPhone|iPod/i) ) {
+    var isIOS = /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
         document.write("<p>Some of the tab bar icons are from the free set created by ");
         document.write("<a href=\"http://www.theworkinggroup.ca/\">The Working Group</a>.");
     }

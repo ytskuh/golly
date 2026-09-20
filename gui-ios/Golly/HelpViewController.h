@@ -2,12 +2,13 @@
 // See docs/License.html for the copyright notice.
 
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 // This is the view controller for the Help tab.
 
-@interface HelpViewController : UIViewController <UIWebViewDelegate>
+@interface HelpViewController : UIViewController <WKNavigationDelegate>
 {
-    IBOutlet UIWebView *htmlView;
+    IBOutlet WKWebView *htmlView;
     IBOutlet UIBarButtonItem *backButton;
     IBOutlet UIBarButtonItem *nextButton;
     IBOutlet UIBarButtonItem *contentsButton;

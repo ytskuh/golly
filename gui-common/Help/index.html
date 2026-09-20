@@ -22,7 +22,9 @@
 <p>
 <ul>
 <script type="text/javascript">
-    if ( navigator.userAgent.match(/iPad|iPhone|iPod/i) ) {
+    var isIOS = /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
         document.write("<li> <b><a href=\"pattern-ios.html\">Pattern Tab</a></b>\n");
         document.write("<li> <b><a href=\"open-ios.html\">Open Tab</a></b>\n");
         document.write("<li> <b><a href=\"settings-ios.html\">Settings Tab</a></b>\n");
@@ -43,7 +45,9 @@
 <li> <b><a href="bounded.html">Bounded Grids</a></b>
 <li> <b><a href="problems.html">Known Problems</a></b>
 <script type="text/javascript">
-    if ( navigator.userAgent.match(/iPad|iPhone|iPod/i) ) {
+    var isIOS = /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
         document.write("<li> <b><a href=\"changes-ios.html\">Changes</a></b>\n");
     } else if ( navigator.userAgent.match(/Android/i) ) {
         document.write("<li> <b><a href=\"changes-android.html\">Changes</a></b>\n");

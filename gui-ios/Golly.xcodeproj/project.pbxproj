@@ -74,6 +74,7 @@
 		0DA5B35715F03654005EBBE8 /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DA5B34115F03654005EBBE8 /* util.cpp */; };
 		0DA5B35815F03654005EBBE8 /* viewport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DA5B34315F03654005EBBE8 /* viewport.cpp */; };
 		0DA5B35915F03654005EBBE8 /* writepattern.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DA5B34515F03654005EBBE8 /* writepattern.cpp */; settings = {COMPILER_FLAGS = "-DZLIB"; }; };
+		0DAE5DDA305FFF31000A7542 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DAE5DD9305FFF31000A7542 /* WebKit.framework */; };
 		0DB7062E1C1C163D008A57C8 /* Help in Resources */ = {isa = PBXBuildFile; fileRef = 0DB7062D1C1C163D008A57C8 /* Help */; };
 		0DB7885E25907A3E0088EF24 /* superalgo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0DB7885D25907A3E0088EF24 /* superalgo.cpp */; };
 		0DBD205B1C131D9E007A70EF /* PatternViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0DBD205A1C131D9E007A70EF /* PatternViewController.xib */; };
@@ -202,6 +203,7 @@
 		0DA5B34415F03654005EBBE8 /* viewport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = viewport.h; sourceTree = "<group>"; };
 		0DA5B34515F03654005EBBE8 /* writepattern.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = writepattern.cpp; sourceTree = "<group>"; };
 		0DA5B34615F03654005EBBE8 /* writepattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = writepattern.h; sourceTree = "<group>"; };
+		0DAE5DD9305FFF31000A7542 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		0DB7062D1C1C163D008A57C8 /* Help */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Help; path = "../gui-common/Help"; sourceTree = "<group>"; };
 		0DB7885D25907A3E0088EF24 /* superalgo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = superalgo.cpp; sourceTree = "<group>"; };
 		0DB7885F25907A4C0088EF24 /* superalgo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = superalgo.h; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 			files = (
 				0D9AA82B15D099F2003BEBD5 /* OpenGLES.framework in Frameworks */,
 				0D9AA82815D099D8003BEBD5 /* QuartzCore.framework in Frameworks */,
+				0DAE5DDA305FFF31000A7542 /* WebKit.framework in Frameworks */,
 				0D2D9AAF156A00F3005B8D19 /* libz.dylib in Frameworks */,
 				0D602F3A1573210000F51C02 /* AudioToolbox.framework in Frameworks */,
 				0D078728156881080051973C /* UIKit.framework in Frameworks */,
@@ -280,6 +283,7 @@
 		0D078726156881080051973C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0DAE5DD9305FFF31000A7542 /* WebKit.framework */,
 				0D2D9AAE156A00F3005B8D19 /* libz.dylib */,
 				0D9AA82715D099D8003BEBD5 /* QuartzCore.framework */,
 				0D9AA82A15D099F2003BEBD5 /* OpenGLES.framework */,
