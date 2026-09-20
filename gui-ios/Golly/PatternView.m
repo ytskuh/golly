@@ -22,7 +22,7 @@
 
 #import "PatternViewController.h"   // for PauseGenerating, ResumeGenerating, StopIfGenerating
 #import "PatternView.h"
-#import "GollyAppDelegate.h"        // for CurrentViewController
+#import "GollyAppDelegate.h"        // for CurrentViewController, PopoverMenuViewController
 
 @implementation PatternView
 
@@ -113,7 +113,7 @@ static GLuint viewFramebuffer = 0;
     int wd = int(self.bounds.size.width);
     int ht = int(self.bounds.size.height);
     
-    //!!! import from view.h if we ever support tiled layers
+    // !!! import from view.h if we ever support tiled layers
     int tileindex = -1;
     
     if ( numclones > 0 && numlayers > 1 && (stacklayers || tilelayers) ) {
@@ -278,15 +278,17 @@ static int startx, starty;
 
 // -----------------------------------------------------------------------------
 
-static NSInteger globalButton;
+// need this UIPopoverPresentationControllerDelegate for PopoverMenuViewController to work
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+// -----------------------------------------------------------------------------
 
 - (void)doSelectionAction
 {
-    UIAlertController *sheet = [UIAlertController
-        alertControllerWithTitle:nil
-        message:nil
-        preferredStyle:UIAlertControllerStyleActionSheet];
-
     NSArray<NSString *> *titles = @[
         @"Remove", @"Cut", @"Copy", @"Clear", @"Clear Outside",
         @"Shrink", @"Fit",
@@ -295,43 +297,30 @@ static NSInteger globalButton;
         @"Rotate Clockwise", @"Rotate Anticlockwise",
         @"Advance", @"Advance Outside"
     ];
-    
+
     UIViewController *presenter = CurrentViewController();
 
-    for (NSInteger i = 0; i < titles.count; i++) {
-        NSString *title = titles[i];
-        [sheet addAction:[UIAlertAction actionWithTitle:title
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction *action) {
-            [presenter dismissViewControllerAnimated:YES completion:^{
-                globalButton = i;
-                [self doDelayedSelection];
+    PopoverMenuViewController *menu = [[PopoverMenuViewController alloc]
+        initWithTitles:titles
+            completion:^(NSInteger selectedIndex) {
+                [self doDelayedSelection:selectedIndex];
             }];
-        }]];
-    }
 
-    // add Cancel item
-    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
-
-    sheet.popoverPresentationController.sourceView = self; // a UIView
-    sheet.popoverPresentationController.sourceRect = self.bounds;
-    // center sheet in view
-    sheet.popoverPresentationController.sourceRect =
+    menu.modalPresentationStyle = UIModalPresentationPopover;
+    menu.popoverPresentationController.sourceView = self;
+    // center popover in view
+    menu.popoverPresentationController.sourceRect =
         CGRectMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds), 0, 0);
-    sheet.popoverPresentationController.permittedArrowDirections = 0;
-    
-    [presenter presentViewController:sheet animated:YES completion:nil];
+    menu.popoverPresentationController.permittedArrowDirections = 0;
+    menu.popoverPresentationController.delegate = self;
+
+    [presenter presentViewController:menu animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
 - (void)doPasteAction
 {
-    UIAlertController *sheet = [UIAlertController
-        alertControllerWithTitle:nil
-        message:nil
-        preferredStyle:UIAlertControllerStyleActionSheet];
-
     NSArray<NSString *> *titles = @[
         @"Abort",
         [NSString stringWithFormat:@"Paste (%@)",
@@ -345,37 +334,29 @@ static NSInteger globalButton;
     
     UIViewController *presenter = CurrentViewController();
 
-    for (NSInteger i = 0; i < titles.count; i++) {
-        NSString *title = titles[i];
-        [sheet addAction:[UIAlertAction actionWithTitle:title
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction *action) {
-            [presenter dismissViewControllerAnimated:YES completion:^{
-                globalButton = i;
-                [self doDelayedPaste];
+    PopoverMenuViewController *menu = [[PopoverMenuViewController alloc]
+        initWithTitles:titles
+            completion:^(NSInteger selectedIndex) {
+                [self doDelayedPaste:selectedIndex];
             }];
-        }]];
-    }
 
-    // add Cancel item
-    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
-
-    sheet.popoverPresentationController.sourceView = self; // a UIView
-    sheet.popoverPresentationController.sourceRect = self.bounds;
-    // center sheet in view
-    sheet.popoverPresentationController.sourceRect =
+    menu.modalPresentationStyle = UIModalPresentationPopover;
+    menu.popoverPresentationController.sourceView = self;
+    // center popover in view
+    menu.popoverPresentationController.sourceRect =
         CGRectMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds), 0, 0);
-    sheet.popoverPresentationController.permittedArrowDirections = 0;
+    menu.popoverPresentationController.permittedArrowDirections = 0;
+    menu.popoverPresentationController.delegate = self;
 
-    [presenter presentViewController:sheet animated:YES completion:nil];
+    [presenter presentViewController:menu animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
 
-- (void)doDelayedSelection
+- (void)doDelayedSelection:(NSInteger)buttonindex
 {
-    if (generating && globalButton >= 1 && globalButton <= 13 &&
-        globalButton != 2 && globalButton != 5 && globalButton != 6) {
+    if (generating && buttonindex >= 1 && buttonindex <= 13 &&
+        buttonindex != 2 && buttonindex != 5 && buttonindex != 6) {
         // temporarily stop generating for all actions except Remove, Copy, Shrink, Fit
         PauseGenerating();
         if (event_checker > 0) {
@@ -384,7 +365,7 @@ static NSInteger globalButton;
             return;
         }
     }
-    switch (globalButton) {
+    switch (buttonindex) {
         case 0:  RemoveSelection(); break;                      // WARNING: above test assumes Remove is index 0
         case 1:  CutSelection(); break;
         case 2:  CopySelection(); break;                        // WARNING: above test assumes Copy is index 2
@@ -406,9 +387,9 @@ static NSInteger globalButton;
 
 // -----------------------------------------------------------------------------
 
-- (void)doDelayedPaste
+- (void)doDelayedPaste:(NSInteger)buttonindex
 {
-    switch (globalButton) {
+    switch (buttonindex) {
         case 0:  AbortPaste(); break;
         case 1:  DoPaste(false); break;
         case 2:  DoPaste(true); break;

@@ -26,3 +26,8 @@ void ShowTabBar(bool show);
 
 // get height of tab bar
 CGFloat TabBarHeight();
+
+@interface PopoverMenuViewController : UIViewController
+- (instancetype)initWithTitles:(NSArray<NSString *> *)titles
+                     completion:(void (^)(NSInteger selectedIndex))completion;
+@end

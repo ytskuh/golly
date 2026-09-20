@@ -115,7 +115,7 @@ static UITabBarController *tabBarController = nil;      // for SwitchToPatternTa
     // (never called in iOS 5, so use applicationDidEnterBackground)
 }
 
-@end
+@end // GollyAppDelegate
 
 // =============================================================================
 
@@ -172,3 +172,87 @@ CGFloat TabBarHeight()
 {
     return tabBarController.tabBar.frame.size.height;
 }
+
+// -----------------------------------------------------------------------------
+
+// this stuff replaces the deprecated UIActionSheet code that caused crashes on iOS 27
+
+@interface PopoverMenuViewController ()
+@property (nonatomic, copy) NSArray<NSString *> *titles;
+@property (nonatomic, copy) void (^completion)(NSInteger);
+@property (nonatomic, strong) NSArray<UIView *> *rows;   // buttons and separators, in display order
+@property (nonatomic, assign) CGFloat rowHeight;
+@property (nonatomic, assign) CGFloat separatorHeight;
+@end
+
+@implementation PopoverMenuViewController
+
+- (instancetype)initWithTitles:(NSArray<NSString *> *)titles
+                     completion:(void (^)(NSInteger))completion
+{
+    self = [super init];
+    if (self) {
+        _titles = [titles copy];
+        _completion = [completion copy];
+
+        UIFont *font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+        _rowHeight = MAX(44, ceil(font.lineHeight) + 16);
+        _separatorHeight = 1.0 / [UIScreen mainScreen].scale;
+
+        CGFloat totalHeight = (_rowHeight * titles.count) + (_separatorHeight * (titles.count - 1));
+        self.preferredContentSize = CGSizeMake(240, totalHeight);
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor systemBackgroundColor];
+
+    UIFont *font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    NSMutableArray<UIView *> *rows = [NSMutableArray array];
+
+    [self.titles enumerateObjectsUsingBlock:^(NSString *title, NSUInteger idx, BOOL *stop) {
+        if (idx > 0) {
+            UIView *separator = [[UIView alloc] init];
+            separator.backgroundColor = [UIColor separatorColor];
+            [self.view addSubview:separator];
+            [rows addObject:separator];
+        }
+
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+        [button setTitle:title forState:UIControlStateNormal];
+        button.titleLabel.font = font;
+        button.tag = idx;
+        [button addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:button];
+        [rows addObject:button];
+    }];
+
+    self.rows = rows;
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+
+    CGFloat width = self.view.bounds.size.width;
+    CGFloat y = 0;
+
+    for (UIView *row in self.rows) {
+        CGFloat height = [row isKindOfClass:[UIButton class]] ? self.rowHeight : self.separatorHeight;
+        row.frame = CGRectMake(0, y, width, height);
+        y += height;
+    }
+}
+
+- (void)buttonTapped:(UIButton *)sender
+{
+    NSInteger index = sender.tag;
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (self.completion) self.completion(index);
+    }];
+}
+
+@end // PopoverMenuViewController

@@ -9,6 +9,7 @@
 #include "control.h"    // for ChangeAlgorithm, CreateRuleFiles
 #include "file.h"       // for OpenFile
 
+#import "GollyAppDelegate.h"        // for PopoverMenuViewController
 #import "InfoViewController.h"      // for ShowTextFile
 #import "OpenViewController.h"      // for MoveSharedFiles
 #import "RuleViewController.h"
@@ -256,38 +257,37 @@ static bool keepalgoindex = false;
 
 // -----------------------------------------------------------------------------
 
+// need this UIPopoverPresentationControllerDelegate for PopoverMenuViewController to work
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+// -----------------------------------------------------------------------------
+
 static NSInteger globalAlgoIndex;
 
 - (IBAction)changeAlgorithm:(id)sender
 {
-    UIAlertController *sheet = [UIAlertController
-        alertControllerWithTitle:nil
-        message:nil
-        preferredStyle:UIAlertControllerStyleActionSheet];
-
+    NSMutableArray<NSString *> *titles = [NSMutableArray array];
     for (int i = 0; i < NumAlgos(); i++) {
-        NSString *title = [NSString stringWithCString:GetAlgoName(i) encoding:NSUTF8StringEncoding];
-        [sheet addAction:[UIAlertAction actionWithTitle:title
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction *action) {
-            globalAlgoIndex = i;
-            void (^finish)(void) = ^{ [self algoSelected:title]; };
-            if (self.presentedViewController != nil) {
-                [self dismissViewControllerAnimated:YES completion:finish];
-            } else {
-                finish();
-            }
-        }]];
+        [titles addObject:[NSString stringWithCString:GetAlgoName(i) encoding:NSUTF8StringEncoding]];
     }
+    
+    PopoverMenuViewController *menu = [[PopoverMenuViewController alloc]
+        initWithTitles:titles
+            completion:^(NSInteger selectedIndex) {
+                globalAlgoIndex = selectedIndex;
+                [self algoSelected:titles[selectedIndex]];
+            }];
 
-    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                                style:UIAlertActionStyleCancel
-                                              handler:nil]];
+    menu.modalPresentationStyle = UIModalPresentationPopover;
+    menu.popoverPresentationController.sourceView = algoButton.superview;
+    menu.popoverPresentationController.sourceRect = algoButton.frame;
+    menu.popoverPresentationController.delegate = self;
 
-    sheet.popoverPresentationController.sourceView = algoButton.superview;
-    sheet.popoverPresentationController.sourceRect = algoButton.frame;
-
-    [self presentViewController:sheet animated:YES completion:nil];
+    [self presentViewController:menu animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------

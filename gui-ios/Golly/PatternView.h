@@ -3,7 +3,7 @@
 
 // This is the view used to display a pattern (within the Pattern tab).
 
-@interface PatternView : UIView <UIGestureRecognizerDelegate>
+@interface PatternView : UIView <UIGestureRecognizerDelegate, UIPopoverPresentationControllerDelegate>
 
 - (void)doPasteAction;
 - (void)doSelectionAction;

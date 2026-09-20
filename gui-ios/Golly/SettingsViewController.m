@@ -9,6 +9,7 @@
 #include "view.h"       // for ToggleCellColors
 #include "control.h"    // for generating
 
+#import "GollyAppDelegate.h"        // for PopoverMenuViewController
 #import "SettingsViewController.h"
 
 @implementation SettingsViewController
@@ -123,33 +124,31 @@ static int oldhashmem;      // detect if user changed maxhashmem
 
 // -----------------------------------------------------------------------------
 
+// need this UIPopoverPresentationControllerDelegate for PopoverMenuViewController to work
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+// -----------------------------------------------------------------------------
+
 - (IBAction)changePasteMode:(id)sender
 {
-    UIAlertController *sheet = [UIAlertController
-        alertControllerWithTitle:nil
-        message:nil
-        preferredStyle:UIAlertControllerStyleActionSheet];
-
     NSArray<NSString *> *titles = @[@"AND", @"COPY", @"OR", @"XOR"];
 
-    for (NSString *title in titles) {
-        [sheet addAction:[UIAlertAction actionWithTitle:title
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction *action) {
-            [self dismissViewControllerAnimated:YES completion:^{
-                [self pasteModeSelected:title];
+    PopoverMenuViewController *menu = [[PopoverMenuViewController alloc]
+        initWithTitles:titles
+            completion:^(NSInteger selectedIndex) {
+                [self pasteModeSelected:titles[selectedIndex]];
             }];
-        }]];
-    }
 
-    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
-                                              style:UIAlertActionStyleCancel
-                                            handler:nil]];
+    menu.modalPresentationStyle = UIModalPresentationPopover;
+    menu.popoverPresentationController.sourceView = modeButton.superview;
+    menu.popoverPresentationController.sourceRect = modeButton.frame;
+    menu.popoverPresentationController.delegate = self;
 
-    sheet.popoverPresentationController.sourceView = modeButton.superview;
-    sheet.popoverPresentationController.sourceRect = modeButton.frame;
-
-    [self presentViewController:sheet animated:YES completion:nil];
+    [self presentViewController:menu animated:YES completion:nil];
 }
 
 // -----------------------------------------------------------------------------
