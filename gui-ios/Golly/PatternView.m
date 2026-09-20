@@ -310,7 +310,7 @@ static NSInteger globalButton;
         }]];
     }
 
-    // add Cancel item (iPhone only)
+    // add Cancel item
     [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
     sheet.popoverPresentationController.sourceView = self; // a UIView
@@ -357,7 +357,7 @@ static NSInteger globalButton;
         }]];
     }
 
-    // add Cancel item (iPhone only)
+    // add Cancel item
     [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
 
     sheet.popoverPresentationController.sourceView = self; // a UIView

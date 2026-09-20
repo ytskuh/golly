@@ -142,7 +142,6 @@ static int oldhashmem;      // detect if user changed maxhashmem
         }]];
     }
 
-    // note that this Cancel item will only appear on an iPhone and not on an iPad
     [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                               style:UIAlertActionStyleCancel
                                             handler:nil]];
