@@ -361,7 +361,10 @@ static int startx, starty;
         PauseGenerating();
         if (event_checker > 0) {
             // try again after a short delay that gives time for NextGeneration() to terminate
-            [self performSelector:@selector(doDelayedSelection) withObject:nil afterDelay:0.01];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)),
+                            dispatch_get_main_queue(), ^{
+                [self doDelayedSelection:buttonindex];
+            });
             return;
         }
     }
