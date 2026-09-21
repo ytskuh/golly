@@ -177,13 +177,64 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
 
 // -----------------------------------------------------------------------------
 
+// WKWebView (unlike UIWebView) does not reliably grant read access to local
+// resources (eg. images) referenced by a relative path when using
+// loadHTMLString:baseURL: with a file:// baseURL, especially on real devices.
+// To keep the triangle-right.png/triangle-down.png icons working below, we
+// write the generated html to a small private directory, copy those two
+// icons alongside it (once), and load the html file itself via
+// loadFileURL:allowingReadAccessToURL:, which does grant real read access.
+
+static NSURL* HtmlScratchDirectory()
+{
+    NSString *dir = [NSTemporaryDirectory() stringByAppendingPathComponent:@"GollyHTML"];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:dir]) {
+        [fm createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    return [[NSURL fileURLWithPath:dir isDirectory:YES] URLByStandardizingPath];
+}
+
+static void CopyBundleFileIfNeeded(NSURL *destDirUrl, NSString *filename)
+{
+    NSString *destPath = [[destDirUrl path] stringByAppendingPathComponent:filename];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([fm fileExistsAtPath:destPath]) return;
+    NSString *srcPath = [[NSBundle mainBundle] pathForResource:[filename stringByDeletingPathExtension]
+                                                          ofType:[filename pathExtension]];
+    if (srcPath) [fm copyItemAtPath:srcPath toPath:destPath error:nil];
+}
+
+static void LoadHtmlWithLocalImages(WKWebView *webView, const std::string& htmldata)
+{
+    NSURL *dirUrl = HtmlScratchDirectory();
+    CopyBundleFileIfNeeded(dirUrl, @"triangle-right.png");
+    CopyBundleFileIfNeeded(dirUrl, @"triangle-down.png");
+
+    NSString *htmlPath = [[dirUrl path] stringByAppendingPathComponent:@"supplied.html"];
+    NSString *html = [NSString stringWithCString:htmldata.c_str() encoding:NSUTF8StringEncoding];
+    NSError *err = nil;
+    if ([html writeToFile:htmlPath atomically:YES encoding:NSUTF8StringEncoding error:&err]) {
+        NSURL *fileUrl = [[NSURL fileURLWithPath:htmlPath] URLByStandardizingPath];
+        [webView loadFileURL:fileUrl allowingReadAccessToURL:dirUrl];
+    } else {
+        // fall back to the old behavior if we somehow can't write the temp file
+        // (icons referenced by relative path may not load in this fallback case)
+        [webView loadHTMLString:html
+                         baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 - (void)showSuppliedPatterns
 {
     std::string htmldata;
     AppendHtmlData(htmldata, patternsdir, "Patterns/", "Supplied patterns:", false);
-    [htmlView loadHTMLString:[NSString stringWithCString:htmldata.c_str() encoding:NSUTF8StringEncoding]
-                             // the following base URL is needed for img links to work
-                     baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]]];
+    // WKWebView needs an actual file loaded via loadFileURL:allowingReadAccessToURL:
+    // (not loadHTMLString:baseURL:) to reliably load the triangle-right/down.png
+    // icons referenced by relative path above -- see LoadHtmlWithLocalImages above.
+    LoadHtmlWithLocalImages(htmlView, htmldata);
 }
 
 // -----------------------------------------------------------------------------
@@ -244,7 +295,7 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
 {
     [super viewDidLoad];
     
-    htmlView.delegate = self;
+    htmlView.navigationDelegate = self;
     
     // init all offsets to top left
     for (int i=0; i<NUM_OPTIONS; i++) {
@@ -345,9 +396,9 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
 
 // -----------------------------------------------------------------------------
 
-// UIWebViewDelegate methods:
+// WKNavigationDelegate methods:
 
-- (void)webViewDidStartLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
 {
     // show the activity indicator in the status bar
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
@@ -355,7 +406,7 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
 
 // -----------------------------------------------------------------------------
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
     // hide the activity indicator in the status bar
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -365,7 +416,7 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
 
 // -----------------------------------------------------------------------------
 
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+static void HandleWebViewNavigationError(NSError *error)
 {
     // hide the activity indicator in the status bar and display error message
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -374,12 +425,22 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
     Warning([error.localizedDescription cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    HandleWebViewNavigationError(error);
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    HandleWebViewNavigationError(error);
+}
+
 // -----------------------------------------------------------------------------
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-    if (navigationType == UIWebViewNavigationTypeLinkClicked) {
-        NSURL *url = [request URL];
+    if (navigationAction.navigationType == WKNavigationTypeLinkActivated) {
+        NSURL *url = navigationAction.request.URL;
         NSString *link = [url absoluteString];
         
         // link should have special prefix
@@ -389,7 +450,8 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
             FixURLPath(path);
             OpenFile(path.c_str());
             SavePrefs();
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"toggledir:"]) {
             // open/close directory
@@ -409,7 +471,8 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
             } else {
                 Warning("Bug: expected supplied patterns!");
             }
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"delete:"]) {
             std::string path = [[link substringFromIndex:7] cStringUsingEncoding:NSUTF8StringEncoding];
@@ -428,7 +491,8 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
                     default: Warning("Bug: can't delete these files!");
                 }
             }
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"edit:"]) {
             std::string path = [[link substringFromIndex:5] cStringUsingEncoding:NSUTF8StringEncoding];
@@ -444,10 +508,11 @@ static void AppendHtmlData(std::string& htmldata, const std::string& dir,
                 }
             }
             ShowTextFile(fullpath.c_str());
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
     }
-    return YES;
+    decisionHandler(WKNavigationActionPolicyAllow);
 }
 
 @end

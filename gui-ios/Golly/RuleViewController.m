@@ -94,7 +94,7 @@ const int UNNAMED_ROW = NUM_ROWS - 1;
 {
     [super viewDidLoad];
     
-    htmlView.delegate = self;
+    htmlView.navigationDelegate = self;
     
     // init all offsets to top left
     for (int i=0; i<MAX_ALGOS; i++) {
@@ -196,9 +196,12 @@ static void CreateRuleLinks(std::string& htmldata, const std::string& dir,
                                               ofType:@"html"
                                          inDirectory:@"Help/Algorithms"];
         if (filePath) {
-            NSURL *fileUrl = [NSURL fileURLWithPath:filePath];
-            NSURLRequest *request = [NSURLRequest requestWithURL:fileUrl];
-            [htmlView loadRequest:request];
+            // grant read access to the whole Help folder (not just Help/Algorithms)
+            // in case an algorithm's html page links to sibling Help resources
+            NSURL *fileUrl = [[NSURL fileURLWithPath:filePath] URLByStandardizingPath];
+            NSString *helpDir = [[bundle resourcePath] stringByAppendingPathComponent:@"Help"];
+            NSURL *helpDirUrl = [[NSURL fileURLWithPath:helpDir isDirectory:YES] URLByStandardizingPath];
+            [htmlView loadFileURL:fileUrl allowingReadAccessToURL:helpDirUrl];
         } else {
             [htmlView loadHTMLString:@"<html><center><font size=+4 color='red'>Failed to find html file!</font></center></html>"
                              baseURL:nil];
@@ -533,15 +536,15 @@ static NSInteger globalAlgoIndex;
 
 // -----------------------------------------------------------------------------
 
-// UIWebViewDelegate methods:
+// WKNavigationDelegate methods:
 
-- (void)webViewDidStartLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
 {
     // show the activity indicator in the status bar
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
     // hide the activity indicator in the status bar
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -549,7 +552,7 @@ static NSInteger globalAlgoIndex;
     htmlView.scrollView.contentOffset = curroffset[algoindex];
 }
 
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+static void HandleWebViewNavigationError(NSError *error)
 {
     // hide the activity indicator in the status bar and display error message
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
@@ -558,26 +561,38 @@ static NSInteger globalAlgoIndex;
     Warning([error.localizedDescription cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
 {
-    if (navigationType == UIWebViewNavigationTypeLinkClicked) {
-        NSURL *url = [request URL];
+    HandleWebViewNavigationError(error);
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    HandleWebViewNavigationError(error);
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+{
+    if (navigationAction.navigationType == WKNavigationTypeLinkActivated) {
+        NSURL *url = navigationAction.request.URL;
         NSString *link = [url absoluteString];
         
-        // look for special prefixes used by Golly (and return NO if found)
+        // look for special prefixes used by Golly (and cancel navigation if found)
         if ([link hasPrefix:@"open:"]) {
             // open specified file, but dismiss modal view first in case OpenFile calls BeginProgress
             [self dismissViewControllerAnimated:YES completion:nil];
             std::string path = [[link substringFromIndex:5] cStringUsingEncoding:NSUTF8StringEncoding];
             OpenFile(path.c_str());
             SavePrefs();
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"rule:"]) {
             // copy specified rule into ruleText
             [ruleText setText:[link substringFromIndex:5]];
             [self checkRule];
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"delete:"]) {
             std::string path = [[link substringFromIndex:7] cStringUsingEncoding:NSUTF8StringEncoding];
@@ -591,7 +606,8 @@ static NSInteger globalAlgoIndex;
                 curroffset[algoindex] = htmlView.scrollView.contentOffset;
                 [self showAlgoHelp];
             }
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
         if ([link hasPrefix:@"edit:"]) {
             std::string path = [[link substringFromIndex:5] cStringUsingEncoding:NSUTF8StringEncoding];
@@ -610,10 +626,11 @@ static NSInteger globalAlgoIndex;
             ShowTextFile(fullpath.c_str(), self);
             // tell viewWillAppear not to reset algoindex to currlayer->algtype
             keepalgoindex = true;
-            return NO;
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
         }
     }
-    return YES;
+    decisionHandler(WKNavigationActionPolicyAllow);
 }
 
 @end

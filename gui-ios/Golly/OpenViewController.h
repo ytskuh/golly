@@ -2,13 +2,14 @@
 // See docs/License.html for the copyright notice.
 
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 // This is the view controller for the Open tab.
 
-@interface OpenViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIWebViewDelegate>
+@interface OpenViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, WKNavigationDelegate>
 {
     IBOutlet UITableView *optionTable;
-    IBOutlet UIWebView *htmlView;
+    IBOutlet WKWebView *htmlView;
 }
 
 @end

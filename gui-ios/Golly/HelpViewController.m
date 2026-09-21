@@ -282,7 +282,12 @@ static std::string pageurl;
 void ShowHelp(const char* filepath)
 {
     SwitchToHelpTab();
-    NSURL *fileUrl = [NSURL fileURLWithPath:[NSString stringWithCString:filepath encoding:NSUTF8StringEncoding]];
-    NSURLRequest *request = [NSURLRequest requestWithURL:fileUrl];
-    [globalHtmlView loadRequest:request];
+    NSString *path = [NSString stringWithCString:filepath encoding:NSUTF8StringEncoding];
+    NSURL *fileUrl = [[NSURL fileURLWithPath:path] URLByStandardizingPath];
+    // Unlike showContentsPage (which always loads from the fixed Help/ folder),
+    // filepath here can point almost anywhere in the app's own sandbox --
+    // Documents/Downloads, a temp .zip extraction folder.  Granting access to the
+    // file's containing folder gives WKWebView the explicit sandbox extension it needs.
+    NSURL *fileDirUrl = [[fileUrl URLByDeletingLastPathComponent] URLByStandardizingPath];
+    [globalHtmlView loadFileURL:fileUrl allowingReadAccessToURL:fileDirUrl];
 }

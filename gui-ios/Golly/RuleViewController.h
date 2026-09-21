@@ -2,10 +2,11 @@
 // See docs/License.html for the copyright notice.
 
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 // This view controller is used when the Pattern tab's Rule button is tapped.
 
-@interface RuleViewController : UIViewController <UITextFieldDelegate, UIWebViewDelegate,
+@interface RuleViewController : UIViewController <UITextFieldDelegate, WKNavigationDelegate,
                                                   UIPickerViewDelegate, UIPickerViewDataSource,
                                                   UIPopoverPresentationControllerDelegate>
 {
@@ -13,7 +14,7 @@
     IBOutlet UITextField *ruleText;
     IBOutlet UILabel *unknownLabel;
     IBOutlet UIPickerView *rulePicker;
-    IBOutlet UIWebView *htmlView;
+    IBOutlet WKWebView *htmlView;
 }
 
 - (IBAction)changeAlgorithm:(id)sender;

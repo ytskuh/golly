@@ -25,6 +25,7 @@
                     <rect key="frame" x="0.0" y="0.0" width="820" height="1085"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
                     <wkWebViewConfiguration key="configuration">
+                        <dataDetectorTypes key="dataDetectorTypes"/>
                         <wkPreferences key="preferences"/>
                     </wkWebViewConfiguration>
                 </wkWebView>
