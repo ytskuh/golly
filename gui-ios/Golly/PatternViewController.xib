@@ -153,7 +153,7 @@
                                 <action selector="doSelectAll:" destination="-1" id="171"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem systemItem="action" id="203">
+                        <barButtonItem title="Edit" id="203">
                             <connections>
                                 <action selector="doAction:" destination="-1" id="204"/>
                             </connections>
