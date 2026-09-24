@@ -569,8 +569,6 @@ static void InitPaths()
                     [self stopGenTimer];
                     [self startGenTimer];
                 }
-            } else {
-                Beep();
             }
         } break;
         
@@ -635,8 +633,6 @@ static void InitPaths()
                 currlayer->view->zoom();
                 [statView setNeedsDisplay];
                 [pattView refreshPattern];
-            } else {
-                Beep();
             }
         } break;
     }

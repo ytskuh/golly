@@ -1,7 +1,7 @@
 // This file is part of Golly.
 // See docs/License.html for the copyright notice.
 
-#include "utils.h"      // for Beep, Warning, FixURLPath
+#include "utils.h"      // for Warning, FixURLPath
 #include "prefs.h"      // for userdir, supplieddir, downloaddir
 #include "file.h"       // for OpenFile, UnzipFile, GetURL, DownloadFile, LoadLexiconPattern
 #include "control.h"    // for ChangeRule

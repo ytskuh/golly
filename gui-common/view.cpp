@@ -7,7 +7,7 @@
 #include "hlifealgo.h"
 #include "viewport.h"
 
-#include "utils.h"          // for Warning, Fatal, YesNo, Beep, etc
+#include "utils.h"          // for Warning, Fatal, YesNo, etc
 #include "prefs.h"          // for showgridlines, etc
 #include "status.h"         // for DisplayMessage, etc
 #include "render.h"         // for InitPaste
@@ -1532,8 +1532,6 @@ void ZoomInPos(int x, int y)
         TestAutoFit();
         currlayer->view->zoom(x, y);
         UpdateEverything();
-    } else {
-        Beep();   // can't zoom in any further
     }
 }
 
