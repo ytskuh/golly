@@ -7,8 +7,6 @@
 
 // This view controller creates a modal dialog that appears
 // when the user taps the Pattern tab's Save button.
-// It is also used (via SaveTextFile) to save a text file
-// when the user is editing a pattern file or .rule file.
 
 @interface SaveViewController : UIViewController <UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource>
 {
@@ -23,9 +21,9 @@
 
 @end
 
-// Ask user to save given text file currently being edited.
+// Ask user to save given pattern or .rule file currently being edited.
 void SaveTextFile(const char* filepath, const char* contents, InfoViewController* currentView);
 
-// Ask user if they want to save their changes.
-// Return 0 if Cancel was tapped, 1 for Don't Save, or 2 for Save.
-int SaveChanges();
+// Ask user if they want to save their changes upon hitting the New button.
+// The completion result is 0 if Cancel was tapped, 1 for Don't Save, or 2 for Save.
+void SaveChanges(void (^completion)(int result));

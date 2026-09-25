@@ -386,10 +386,8 @@ void SaveTextFile(const char* filepath, const char* contents, InfoViewController
 
 // -----------------------------------------------------------------------------
 
-int SaveChanges()
+void SaveChanges(void (^completion)(int result))
 {
-    __block int result = -1;
-
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:nil
         message:@"Do you want to save your changes?"
@@ -399,7 +397,7 @@ int SaveChanges()
         actionWithTitle:@"Cancel"
         style:UIAlertActionStyleCancel
         handler:^(UIAlertAction * _Nonnull action) {
-            result = 0;
+            completion(0);
         }];
     [alert addAction:cancelAction];
 
@@ -407,7 +405,7 @@ int SaveChanges()
         actionWithTitle:@"Don't Save"
         style:UIAlertActionStyleDestructive
         handler:^(UIAlertAction * _Nonnull action) {
-            result = 1;
+            completion(1);
         }];
     [alert addAction:dontSaveAction];
 
@@ -415,18 +413,9 @@ int SaveChanges()
         actionWithTitle:@"Save"
         style:UIAlertActionStyleDefault
         handler:^(UIAlertAction * _Nonnull action) {
-            result = 2;
+            completion(2);
         }];
     [alert addAction:saveAction];
 
     [CurrentViewController() presentViewController:alert animated:YES completion:nil];
-    
-    // wait for user to hit button
-    while (result == -1) {
-        event_checker++;
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-        event_checker--;
-    }
-
-    return result;
 }

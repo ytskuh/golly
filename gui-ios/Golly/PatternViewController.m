@@ -284,6 +284,22 @@ static void InitPaths()
 
 // -----------------------------------------------------------------------------
 
+- (void)createNewPattern;
+{
+    // finish doNew
+    NewPattern();
+    
+    [modeControl setSelectedSegmentIndex:currlayer->touchmode];
+    
+    [self updateDrawingState];
+    [self updateButtons];
+    
+    [statView setNeedsDisplay];
+    [pattView refreshPattern];
+}
+
+// -----------------------------------------------------------------------------
+
 - (IBAction)doNew:(id)sender
 {
     if (drawingcells) return;
@@ -304,30 +320,27 @@ static void InitPaths()
     ClearMessage();
     if (currlayer->dirty && !currlayer->algo->isEmpty()) {
         // ask user if they want to save their changes
-        int result = SaveChanges();
-        if (result == 0) {
-            // Cancel, do nothing
-            return;
-        }
-        if (result == 2) {
-            // Save, so let user save current pattern in a file via a modal view
-            SaveViewController *modalSaveController = [[SaveViewController alloc] initWithNibName:nil bundle:nil];
-            [modalSaveController setModalPresentationStyle:UIModalPresentationFormSheet];
-            [self presentViewController:modalSaveController animated:YES completion:nil];
-            modalSaveController = nil;
-            return;   // save succeeded or user hit Cancel in Save dialog
-        }
-        // continue below if user hit Don't Save (result 1)
+        SaveChanges(^(int result) {
+            if (result == 0) {
+                // Cancel, so do nothing
+                return;
+            }
+            if (result == 2) {
+                // Save, so let user save current pattern in a file via a modal view
+                SaveViewController *modalSaveController = [[SaveViewController alloc] initWithNibName:nil bundle:nil];
+                [modalSaveController setModalPresentationStyle:UIModalPresentationFormSheet];
+                [self presentViewController:modalSaveController animated:YES completion:nil];
+                modalSaveController = nil;
+                return;   // save succeeded or user hit Cancel in Save dialog
+            }
+            if (result == 1) {
+                // Don't Save, so create a new pattern
+                [self createNewPattern];
+            }
+        });
+    } else {
+        [self createNewPattern];
     }
-    NewPattern();
-    
-    [modeControl setSelectedSegmentIndex:currlayer->touchmode];
-    
-    [self updateDrawingState];
-    [self updateButtons];
-    
-    [statView setNeedsDisplay];
-    [pattView refreshPattern];
 }
 
 // -----------------------------------------------------------------------------
