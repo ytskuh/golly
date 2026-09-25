@@ -302,6 +302,23 @@ static void InitPaths()
     }
     
     ClearMessage();
+    if (currlayer->dirty && !currlayer->algo->isEmpty()) {
+        // ask user if they want to save their changes
+        int result = SaveChanges();
+        if (result == 0) {
+            // Cancel, do nothing
+            return;
+        }
+        if (result == 2) {
+            // Save, so let user save current pattern in a file via a modal view
+            SaveViewController *modalSaveController = [[SaveViewController alloc] initWithNibName:nil bundle:nil];
+            [modalSaveController setModalPresentationStyle:UIModalPresentationFormSheet];
+            [self presentViewController:modalSaveController animated:YES completion:nil];
+            modalSaveController = nil;
+            return;   // save succeeded or user hit Cancel in Save dialog
+        }
+        // continue below if user hit Don't Save (result 1)
+    }
     NewPattern();
     
     [modeControl setSelectedSegmentIndex:currlayer->touchmode];
@@ -355,10 +372,8 @@ static void InitPaths()
     
     // let user save current pattern in a file via a modal view
     SaveViewController *modalSaveController = [[SaveViewController alloc] initWithNibName:nil bundle:nil];
-    
     [modalSaveController setModalPresentationStyle:UIModalPresentationFormSheet];
     [self presentViewController:modalSaveController animated:YES completion:nil];
-    
     modalSaveController = nil;
 }
 

@@ -25,3 +25,7 @@
 
 // Ask user to save given text file currently being edited.
 void SaveTextFile(const char* filepath, const char* contents, InfoViewController* currentView);
+
+// Ask user if they want to save their changes.
+// Return 0 if Cancel was tapped, 1 for Don't Save, or 2 for Save.
+int SaveChanges();

@@ -8,6 +8,7 @@
 #include "layer.h"          // for currlayer, etc
 #include "file.h"           // for SavePattern, GetBaseName
 
+#import "GollyAppDelegate.h"    // for CurrentViewController()
 #import "SaveViewController.h"
 
 @implementation SaveViewController
@@ -381,4 +382,51 @@ void SaveTextFile(const char* filepath, const char* contents, InfoViewController
     
     // cannot reset inSaveTextFile here (it must be done in viewWillDisappear)
     // because doSave is called AFTER SaveTextFile finishes
+}
+
+// -----------------------------------------------------------------------------
+
+int SaveChanges()
+{
+    __block int result = -1;
+
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:nil
+        message:@"Do you want to save your changes?"
+        preferredStyle:(UIAlertControllerStyleAlert)];
+
+    UIAlertAction *cancelAction = [UIAlertAction
+        actionWithTitle:@"Cancel"
+        style:UIAlertActionStyleCancel
+        handler:^(UIAlertAction * _Nonnull action) {
+            result = 0;
+        }];
+    [alert addAction:cancelAction];
+
+    UIAlertAction *dontSaveAction = [UIAlertAction
+        actionWithTitle:@"Don't Save"
+        style:UIAlertActionStyleDestructive
+        handler:^(UIAlertAction * _Nonnull action) {
+            result = 1;
+        }];
+    [alert addAction:dontSaveAction];
+
+    UIAlertAction *saveAction = [UIAlertAction
+        actionWithTitle:@"Save"
+        style:UIAlertActionStyleDefault
+        handler:^(UIAlertAction * _Nonnull action) {
+            result = 2;
+        }];
+    [alert addAction:saveAction];
+
+    [CurrentViewController() presentViewController:alert animated:YES completion:nil];
+    
+    // wait for user to hit button
+    while (result == -1) {
+        event_checker++;
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        event_checker--;
+    }
+
+    return result;
 }
