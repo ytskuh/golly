@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
     <device id="ipad10_9rounded" orientation="portrait" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -25,7 +25,7 @@
                     <rect key="frame" x="0.0" y="0.0" width="820" height="1085"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES" flexibleMaxY="YES"/>
                     <wkWebViewConfiguration key="configuration">
-                        <dataDetectorTypes key="dataDetectorTypes"/>
+                        <dataDetectorTypes key="dataDetectorTypes" none="YES"/>
                         <wkPreferences key="preferences"/>
                     </wkWebViewConfiguration>
                 </wkWebView>
@@ -34,17 +34,17 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <items>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="26"/>
-                        <barButtonItem title="   &lt;   " id="23">
+                        <barButtonItem title="   &lt;   " style="plain" id="23">
                             <connections>
                                 <action selector="doBack:" destination="-1" id="34"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem title="   &gt;   " id="24">
+                        <barButtonItem title="   &gt;   " style="plain" id="24">
                             <connections>
                                 <action selector="doNext:" destination="-1" id="35"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem title="Contents" id="25">
+                        <barButtonItem title="Contents" style="plain" id="25">
                             <connections>
                                 <action selector="doContents:" destination="-1" id="36"/>
                             </connections>
