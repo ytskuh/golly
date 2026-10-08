@@ -317,6 +317,7 @@ const int MAX_MEM_MB =           // maximum value of maximum memory
           sizeof(char*) <= 4 ? 4000 : 100000000;
 const int MAX_BASESTEP = 2000000000;    // maximum base step
 const int MAX_DELAY = 5000;      // maximum mindelay or maxdelay
+const int MAX_THREADS = 1024;    // maximum parthreads
 const int MAX_THUMBRANGE = 500;  // maximum thumbrange
 const int MAX_SENSITIVITY = 10;  // maximum wheelsens
 const int MIN_DIRWD = 10;        // minimum dirwinwd

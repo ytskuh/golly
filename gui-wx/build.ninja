@@ -171,6 +171,7 @@ build $objdir/wxedit.o: cxxc_wx wxedit.cpp
 build $objdir/wxselect.o: cxxc_wx wxselect.cpp
 build $objdir/wxcontrol.o: cxxc_wx wxcontrol.cpp
 build $objdir/wxtimeline.o: cxxc_wx wxtimeline.cpp
+build $objdir/wxbench.o: cxxc_wx wxbench.cpp
 build $objdir/wxundo.o: cxxc_wx wxundo.cpp
 build $objdir/wxlayer.o: cxxc_wx wxlayer.cpp
 build $objdir/wxmain.o: cxxc_wx wxmain.cpp
@@ -213,7 +214,7 @@ build $exedir/golly: link $objdir/bigint.o $objdir/lifealgo.o $objdir/hlifealgo.
       $objdir/wxutils.o $objdir/wxprefs.o $objdir/wxalgos.o $objdir/wxrule.o $
       $objdir/wxinfo.o $objdir/wxhelp.o $objdir/wxstatus.o $objdir/wxview.o $objdir/wxoverlay.o $
       $objdir/wxrender.o $objdir/wxscript.o $objdir/wxlua.o $objdir/wxpython.o $
-      $objdir/wxfile.o $objdir/wxedit.o $objdir/wxcontrol.o $objdir/wxtimeline.o $
+      $objdir/wxfile.o $objdir/wxedit.o $objdir/wxcontrol.o $objdir/wxtimeline.o $objdir/wxbench.o $
       $objdir/wxundo.o $objdir/wxselect.o $objdir/wxlayer.o $objdir/wxmain.o $objdir/wxgolly.o $
       $lua_lib
    extra_ldflags = $extralibs_opengl $wx_ldflags $lua_ldflags $sound_ldflags

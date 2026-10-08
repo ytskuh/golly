@@ -32,6 +32,10 @@
 wxMenu* algomenu;                   // menu of algorithm names
 wxMenu* algomenupop;                // copy of algomenu for PopupMenu calls
 algo_type initalgo = QLIFE_ALGO;    // initial layer's algorithm
+algo_type qlifepar_algo;            // QuickLife Parallel
+algo_type hlifepar_algo;            // HashLife Parallel
+algo_type qlifecuda_algo = -1;      // QuickLife CUDA (-1 in builds without CUDA)
+int parthreads = 1;                 // set by InitAlgorithms and GetPrefs
 AlgoData* algoinfo[MAX_ALGOS];      // static info for each algorithm
 
 wxBitmap** circles7x7;              // circular icons for scale 1:8
@@ -743,6 +747,18 @@ void InitAlgorithms()
     jvnalgo::doInitializeAlgoInfo(AlgoData::tick());
     superalgo::doInitializeAlgoInfo(AlgoData::tick());
     
+    // the Parallel algos come after the original ones so that the original
+    // ones keep their indices (scripts can refer to algos by index)
+    qlifepar_algo = NumAlgos();
+    qlifealgo::doInitializeParAlgoInfo(AlgoData::tick());
+    hlifepar_algo = NumAlgos();
+    hlifealgo::doInitializeParAlgoInfo(AlgoData::tick());
+#ifdef ENABLE_CUDA
+    qlifecuda_algo = NumAlgos();
+    qlifealgo::doInitializeCudaAlgoInfo(AlgoData::tick());
+#endif
+    SetParallelThreads(hlifealgo::parthreads);   // all CPUs until GetPrefs reads par_threads
+    
     // RuleLoader must be last so we can display detailed error messages
     // (see LoadRule in wxhelp.cpp)
     ruleloaderalgo::doInitializeAlgoInfo(AlgoData::tick());
@@ -863,6 +879,22 @@ lifealgo* CreateNewUniverse(algo_type algotype, bool allowcheck)
     if (allowcheck) newalgo->setpoll(wxGetApp().Poller());
     
     return newalgo;
+}
+
+// -----------------------------------------------------------------------------
+
+bool IsQuickLife(algo_type algotype)
+{
+    return algotype == QLIFE_ALGO || algotype == qlifepar_algo || algotype == qlifecuda_algo;
+}
+
+// -----------------------------------------------------------------------------
+
+void SetParallelThreads(int n)
+{
+    parthreads = n;
+    hlifealgo::parthreads = n;
+    qlifealgo::parthreads = n;
 }
 
 // -----------------------------------------------------------------------------

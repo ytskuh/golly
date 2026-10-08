@@ -62,6 +62,9 @@ char* user_rules = (char *)"";              // can be changed by -s or --search
 char* supplied_rules = (char *)"Rules/";
 
 int benchmark ; // show timing?
+int summary ;   // print a one-line timing/result summary at the end?
+int threads = 0 ;      // HashLife threads (0 = serial code)
+int parcutoff = 0 ;    // HashLife parallel task cutoff level (0: chosen by timing steps)
 /*
  *   This lifeerrors is used to check rendering during a progress dialog.
  */
@@ -166,6 +169,9 @@ options options[] = {
 //                                                        'i', &stepfactor },
   { "",   "--autofit", "Autofit before each render", 'b', &autofit },
   { "",   "--exec", "Run testing script", 's', &testscript },
+  { "",   "--summary", "Print load/run time and final result (benchmarking)", 'b', &summary },
+  { "",   "--threads", "HashLife and QuickLife threads (0 = serial code); also the Parallel algos' threads (default: all CPUs)", 'i', &threads },
+  { "",   "--parcutoff", "HashLife parallel task cutoff level (default 0: chosen by timing)", 'i', &parcutoff },
   { 0, 0, 0, 0, 0 }
 } ;
 
@@ -530,6 +536,11 @@ int main(int argc, char *argv[]) {
    ltlalgo::doInitializeAlgoInfo(staticAlgoInfo::tick()) ;
    jvnalgo::doInitializeAlgoInfo(staticAlgoInfo::tick()) ;
    superalgo::doInitializeAlgoInfo(staticAlgoInfo::tick()) ;
+   qlifealgo::doInitializeParAlgoInfo(staticAlgoInfo::tick()) ;
+   hlifealgo::doInitializeParAlgoInfo(staticAlgoInfo::tick()) ;
+#ifdef ENABLE_CUDA
+   qlifealgo::doInitializeCudaAlgoInfo(staticAlgoInfo::tick()) ;
+#endif
    ruleloaderalgo::doInitializeAlgoInfo(staticAlgoInfo::tick()) ;
    while (argc > 1 && argv[1][0] == '-') {
       argc-- ;
@@ -595,6 +606,13 @@ case 's':
    }
    if (timeline && hyperxxx)
       lifefatal("Cannot use both timeline and exponentially increasing steps") ;
+   hlifealgo::numthreads = threads ;
+   qlifealgo::numthreads = threads ;
+   if (threads > 0) {
+      hlifealgo::parthreads = threads ;
+      qlifealgo::parthreads = threads ;
+   }
+   hlifealgo::parcutoff = parcutoff ;
    imp = createUniverse() ;
    if (progress)
       lifeerrors::seterrorhandler(&progerrors_instance) ;
@@ -614,6 +632,7 @@ case 's':
       runtestscript(testscript) ;
    }
    filename = argv[1] ;
+   double loadstart = gollySecondCount() ;
    const char *err = readpattern(argv[1], *imp) ;
    if (err) lifefatal(err) ;
    if (liferule) {
@@ -638,7 +657,9 @@ case 's':
          lifefatal("Bad increment for timeline") ;
       imp->startrecording(2, lowbit) ;
    }
+   double runstart = gollySecondCount() ;
    int fc = 0 ;
+   long steps = 0 ;
    for (;;) {
       if (benchmark)
          cout << timestamp() << " " ;
@@ -675,6 +696,7 @@ case 's':
       }
       if (boundedgrid && !imp->CreateBorderCells()) break ;
       imp->step() ;
+      steps++ ;
       if (boundedgrid && !imp->DeleteBorderCells()) break ;
       if (timeline) imp->extendtimeline() ;
       if (maxgen < 0 && outfilename != 0)
@@ -683,6 +705,24 @@ case 's':
          imp->pruneframes() ;
       if (hyperxxx)
          imp->setIncrement(imp->getGeneration()) ;
+   }
+   if (summary) {
+      double runend = gollySecondCount() ;
+      cout << "summary load_s=" << (runstart - loadstart)
+           << " run_s=" << (runend - runstart)
+           << " steps=" << steps
+           << " gen=" << imp->getGeneration().tostring(0) ;
+      cout << " pop=" << imp->getPopulation().tostring(0) ;
+      if (imp->isEmpty()) {
+         cout << " bbox=empty" << endl ;
+      } else {
+         bigint t, l, b, r ;
+         imp->findedges(&t, &l, &b, &r) ;
+         cout << " bbox=" << l.tostring(0) ;
+         cout << "," << t.tostring(0) ;
+         cout << "," << r.tostring(0) ;
+         cout << "," << b.tostring(0) << endl ;
+      }
    }
    if (maxgen >= 0 && outfilename != 0)
       writepat(-1) ;

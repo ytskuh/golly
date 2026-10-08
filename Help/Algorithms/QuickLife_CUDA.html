@@ -1,0 +1,24 @@
+<html>
+<title>Golly Help: QuickLife CUDA</title>
+<body bgcolor="#FFFFCE">
+
+<p>
+QuickLife CUDA computes the same patterns as
+<a href="QuickLife.html">QuickLife</a>, on an NVIDIA graphics card.
+It supports the same rules as QuickLife.
+It is available only in builds of Golly made with CUDA support.
+
+<p>
+The graphics card computes generations of outer-totalistic rules
+(B.../S... rules, including B0 rules) on unbounded grids.
+Other rules, bounded grids, and computers without a usable NVIDIA card
+use QuickLife on one thread.
+
+<p>
+The cells are copied back from the graphics card whenever Golly needs them,
+for example to display the pattern after each step.
+For large patterns that copy can take longer than the generations,
+so larger step sizes make better use of the card.
+
+</body>
+</html>

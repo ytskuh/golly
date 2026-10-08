@@ -1,0 +1,28 @@
+<html>
+<title>Golly Help: HashLife Parallel</title>
+<body bgcolor="#FFFFCE">
+
+<p>
+HashLife Parallel computes the same patterns as
+<a href="HashLife.html">HashLife</a>, using several threads.
+It supports the same rules as HashLife.
+
+<p>
+Each step is split into pieces of work that the threads share.
+Patterns whose steps take more than a few milliseconds gain the most;
+very small steps can be slower than with HashLife.
+
+<p>
+The number of threads is set in
+<a href="prefs:control">Preferences > Control</a>
+(the default is the number of CPUs).
+A new value is used by universes created afterwards,
+for example after opening a pattern or changing the algorithm.
+
+<p>
+While one step is being computed, Golly does not respond to
+input; it responds between steps.
+With a large step size, a single step can take a long time.
+
+</body>
+</html>

@@ -6,6 +6,8 @@
 #include "lifealgo.h"
 #include "liferules.h"
 #include "util.h"
+#include <vector>
+#include <atomic>
 /*
  *   Into instances of this node structure is where almost all of the
  *   memory allocated by this program goes.  Thus, it is imperative we
@@ -112,8 +114,9 @@ struct node {
  *   it, and we want it to stay as small as possible.  Now, notice
  *   that, in all valid struct nodes, all four pointers (nw, ne, sw,
  *   and se) must contain a live non-zero value.  We simply ensure
- *   that the struct leaf contains a zero where the first (nw) pointer
- *   field would be in a struct node.
+ *   that the struct leaf contains a small value (0, or 1 for a leaf in
+ *   the hash table, see SLOTLEAF in hlifealgo.cpp) where the first (nw)
+ *   pointer field would be in a struct node.
  *
  *   Each short represents a 4-square in normal, left-to-right then top-down
  *   order from the most significant bit.  So bit 0x8000 is the upper
@@ -121,17 +124,27 @@ struct node {
  *   so on.
  */
 struct leaf {
-   node *next ;              /* hash link */
-   node *isnode ;            /* must always be zero for leaves */
+   node *next ;              /* gc mark bit */
+   node *isnode ;            /* 0, or SLOTLEAF when hashed */
    unsigned short nw, ne, sw, se ;  /* constant */
    bigint leafpop ;         /* how many set bits */
    unsigned short res1, res2 ;      /* constant */
+   g_uintptr_t wnum ;       /* cell number while writing macrocell */
 } ;
 /*
  *   If it is a struct node, this returns a non-zero value, otherwise it
  *   returns a zero value.
  */
-#define is_node(n) (((node *)(n))->nw)
+#define is_node(n) (((g_uintptr_t)(((node *)(n))->nw)) > 3)
+/*
+ *   The hash index (see "The hash table" in hlifealgo.cpp).
+ */
+struct hlindex {
+   unsigned long long *e ;   // entries: 0 (empty), or a node pointer and tag
+   g_uintptr_t cap ;         // entries
+   g_uintptr_t used ;        // entries not empty
+   g_uintptr_t limit ;       // used that makes the index grow
+} ;
 /*
  *   For explicit prefetching we retain some state on our lookup
  *   calculations.
@@ -143,6 +156,12 @@ struct setup_t {
    void prefetch(node **addr) const { PREFETCH(addr) ; }
 } ;
 #endif
+struct hlpar ;
+struct hlworker ;
+struct hljob ;
+struct hlwait ;
+struct hlframe ;
+struct hlitem ;
 /**
  *   Our hlifealgo class.
  */
@@ -179,6 +198,20 @@ public:
    virtual const char *readmacrocell(char *line) ;
    virtual const char *writeNativeFormat(std::ostream &os, char *comments) ;
    static void doInitializeAlgoInfo(staticAlgoInfo &) ;
+   static void doInitializeParAlgoInfo(staticAlgoInfo &) ;
+   /*
+    *   Parallel stepping.  nthreads is this universe's thread count; it
+    *   starts as numthreads, or parthreads for a universe made as
+    *   "HashLife Parallel".  0 uses the serial code; N >= 1 uses
+    *   the parallel code with N threads.  Results of nodes at level
+    *   parcutoff or above (2^parcutoff cells wide; at least 5) are computed
+    *   as separate tasks; smaller ones run inside the task that needs them.
+    *   parcutoff 0 chooses the level by timing steps (see hlifealgo.cpp).
+    */
+   int nthreads ;
+   static int numthreads ;
+   static int parthreads ;
+   static int parcutoff ;
 private:
 /*
  *   Some globals representing our universe.  The root is the
@@ -203,12 +236,9 @@ private:
  */
    node **stack ;
    int stacksize ;
-   g_uintptr_t hashpop, hashlimit, hashprime ;
-#ifndef PRIMEMOD
-   g_uintptr_t hashmask ;
-#endif
+   g_uintptr_t hashpop ;
    static double maxloadfactor ;
-   node **hashtab ;
+   hlindex idx ;
    int halvesdone ;
    int gsp ;
    g_uintptr_t alloced, maxmem ;
@@ -216,7 +246,11 @@ private:
    int okaytogc ;
    g_uintptr_t totalthings ;
    node *nodeblocks ;
+   char *regions, *regionnext, *regionend ;  // see newblock()
    char *ruletable ;
+   int leafnk ;                        // see setleafrule()
+   unsigned char leafk[9] ;
+   unsigned short leafbm[9], leafsm[9] ;
    bigint population ;
    bigint setincrement ;
    bigint pow2step ; // greatest power of two in increment
@@ -243,7 +277,15 @@ private:
    static char statusline[] ;
 //
    void leafres(leaf *n) ;
-   void resize() ;
+   void setleafrule() ;
+   void leafstep(const leaf *n, const leaf *ne, const leaf *t, const leaf *e,
+                 int gens, unsigned short *q) const ;
+   void index_alloc(hlindex &x, g_uintptr_t cap) ;
+   void index_put(hlindex &x, node *p) ;
+   void index_full() ;
+   void index_grow(g_uintptr_t cap) ;
+   node *find_node_h(g_uintptr_t h, node *nw, node *ne, node *sw, node *se) ;
+   node *find_node_new(node *nw, node *ne, node *sw, node *se) ;
    node *find_node(node *nw, node *ne, node *sw, node *se) ;
 #ifdef USEPREFETCH
    node *find_node(setup_t &su) ;
@@ -254,6 +296,8 @@ private:
    void rehash_node(node *n) ;
    leaf *find_leaf(unsigned short nw, unsigned short ne,
                    unsigned short sw, unsigned short se) ;
+   leaf *find_leaf_new(unsigned short nw, unsigned short ne,
+                       unsigned short sw, unsigned short se) ;
    node *getres(node *n, int depth) ;
    node *dorecurs(node *n, node *ne, node *t, node *e, int depth) ;
    node *dorecurs_half(node *n, node *ne, node *t, node *e, int depth) ;
@@ -261,10 +305,10 @@ private:
    leaf *dorecurs_leaf_half(leaf *n, leaf *ne, leaf *t, leaf *e) ;
    leaf *dorecurs_leaf_quarter(leaf *n, leaf *ne, leaf *t, leaf *e) ;
    node *newnode() ;
+   node *newblock() ;
    leaf *newleaf() ;
    node *newclearednode() ;
    leaf *newclearedleaf() ;
-   void repurpose(void *mem, size_t bytes) ;
    void pushroot_1() ;
    int node_depth(node *n) ;
    node *zeronode(int depth) ;
@@ -280,6 +324,7 @@ private:
    void afterwritemc(node *root, int depth) ;
    void calcPopulation() ;
    node *save(node *n) ;
+   node *savegrow(node *n) ;
    void pop(int n) ;
    void clearstack() ;
    void clearcache() ;
@@ -291,6 +336,53 @@ private:
    void new_ngens(int newval) ;
    int log2(unsigned int n) ;
    node *runpattern() ;
+   // parallel stepping (see that section in hlifealgo.cpp)
+   hlpar *par ;
+   node *runpattern_par(node *n, int depth) ;
+   int par_cutoff(int depth) ;
+   void par_cutoff_time(double t) ;
+   void par_gc_mark(node **a, int k, int invalidate) ;
+   void par_gc_roots(int invalidate) ;
+   void par_gc(hlworker &w) ;
+   void par_gc_phase(hlworker &w, int phase, long total) ;
+   void par_gc_work(hlworker &w, int gen) ;
+   void par_gc_roots_of(std::vector<node *> &roots, node **a, int k) ;
+   void par_stop() ;
+   void par_topology() ;
+   void par_worker(hlworker &w) ;
+   void par_attention(hlworker &w) ;
+   int par_one(hlworker &w) ;
+   int par_steal(hlworker &w, hlitem &it) ;
+   int par_give(hlworker &w, hlitem &it, int remote) ;
+   void par_answer(hlworker &w) ;
+   void par_close(hlworker &w) ;
+   void par_run(hlworker &w, void *p, long a) ;
+   node *getres_h(hlworker &w, node *n, int depth) ;
+   node *calc_h(hlworker &w, node *n, int depth) ;
+   void par_convert(hlworker &w, hlframe &f) ;
+   void par_stage2(hlworker &w, hljob *j, int q) ;
+   void par_finish(hlworker &w, hljob *j) ;
+   void par_complete(hlworker &w, node *c, node *r) ;
+   void par_deliver(hlworker &w, hlwait *wt, node *r) ;
+   hljob *par_job_alloc(hlworker &w) ;
+   void par_count_nodes(hlworker &w) ;
+   void par_flush(hlworker &w) ;
+   node *par_newnode(hlworker &w) ;
+   void par_index_full(hlworker &w) ;
+   void par_index_grow(hlworker &w) ;
+   void par_rehash(hlworker &w, g_uintptr_t ncap) ;
+   node *find_node_par(hlworker &w, g_uintptr_t h,
+                       node *nw, node *ne, node *sw, node *se) ;
+   node *find_node_par(hlworker &w, node *nw, node *ne, node *sw, node *se) ;
+   leaf *find_leaf_par(hlworker &w, unsigned short nw, unsigned short ne,
+                       unsigned short sw, unsigned short se) ;
+   node *getres_in(hlworker &w, node *n, int depth) ;
+   node *calc_in(hlworker &w, node *n, int depth) ;
+   node *dorecurs_in(hlworker &w, node *n, node *ne, node *t, node *e, int depth) ;
+   node *dorecurs_half_in(hlworker &w, node *n, node *ne, node *t, node *e, int depth) ;
+   leaf *dorecurs_leaf_in(hlworker &w, leaf *n, leaf *ne, leaf *t, leaf *e) ;
+   leaf *dorecurs_leaf_half_in(hlworker &w, leaf *n, leaf *ne, leaf *t, leaf *e) ;
+   leaf *dorecurs_leaf_quarter_in(hlworker &w, leaf *n, leaf *ne, leaf *t, leaf *e) ;
    void renderbm(int x, int y) ;
    void fill_ll(int d) ;
    void drawnode(node *n, int llx, int lly, int depth, node *z) ;

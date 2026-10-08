@@ -372,7 +372,7 @@ void Selection::Advance()
     // check if selection encloses entire pattern;
     // can't do this if qlife because it uses gen parity to decide which bits to draw;
     // also avoid this if undo/redo is enabled (too messy to remember cell changes)
-    if ( currlayer->algtype != QLIFE_ALGO && !savecells && Contains(top, left, bottom, right) ) {
+    if ( !IsQuickLife(currlayer->algtype) && !savecells && Contains(top, left, bottom, right) ) {
         mainptr->generating = true;
         wxGetApp().PollerReset();
 
@@ -512,7 +512,7 @@ void Selection::AdvanceOutside()
     // check if selection is completely outside pattern edges;
     // can't do this if qlife because it uses gen parity to decide which bits to draw;
     // also avoid this if undo/redo is enabled (too messy to remember cell changes)
-    if ( currlayer->algtype != QLIFE_ALGO && !savecells && Outside(top, left, bottom, right) ) {
+    if ( !IsQuickLife(currlayer->algtype) && !savecells && Outside(top, left, bottom, right) ) {
         mainptr->generating = true;
         wxGetApp().PollerReset();
 

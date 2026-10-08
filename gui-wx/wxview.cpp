@@ -32,6 +32,7 @@
 #include "wxlayer.h"       // for currlayer, ResizeLayers, etc
 #include "wxoverlay.h"     // for curroverlay
 #include "wxtimeline.h"    // for StartStopRecording, DeleteTimeline, etc
+#include "wxbench.h"       // for BenchNow, BenchAddPaint
 #include "wxview.h"
 
 // -----------------------------------------------------------------------------
@@ -2413,9 +2414,12 @@ void PatternView::OnPaint(wxPaintEvent& WXUNUSED(event))
         if (glMaxTextureSize < 1024) glMaxTextureSize = 1024;
     }
     
+    double t0 = BenchNow();
     DrawView(tileindex);
+    double t1 = BenchNow();
     
     SwapBuffers();
+    BenchAddPaint(t1 - t0, BenchNow() - t1);
     
     // this is used to ensure viewport is updated immediately on Linux and Mac OS
     // when a script calls g.update or ov("update")

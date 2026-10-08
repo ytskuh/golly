@@ -141,6 +141,7 @@ public:
     void QuitApp();
 
     bool generating;            // currently generating a pattern?
+    double stepspersec;         // steps per second while generating (0 until measured)
     bool fullscreen;            // in full screen mode?
     bool showbanner;            // showing banner message?
     bool keepmessage;           // don't clear message created by script?
@@ -222,6 +223,8 @@ private:
     wxGenericDirCtrl* filectrl;
 
     int hypdown;                    // for hyperspeed
+    int ratesteps;                  // steps since ratestart
+    wxLongLong ratestart;           // start of the current stepspersec measurement
     int minexpo;                    // currexpo at maximum delay (must be <= 0)
     long begintime, endtime;        // for timing info
     double begingen, endgen;        // ditto

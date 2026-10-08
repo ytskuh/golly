@@ -20,6 +20,7 @@
 #include "wxalgos.h"       // for algoinfo
 #include "wxlayer.h"       // for currlayer
 #include "wxtimeline.h"    // for TimelineExists
+#include "wxbench.h"       // for BenchNow, BenchAddStatus
 #include "wxstatus.h"
 
 // -----------------------------------------------------------------------------
@@ -277,6 +278,16 @@ int StatusBar::GetCurrentDelay()
 
 // -----------------------------------------------------------------------------
 
+static void AppendStepRate(wxString& strbuf)
+{
+    // while generating, show the measured steps per second (eg. "Step=10^1 (59.8 steps/s)")
+    if (mainptr->generating && mainptr->stepspersec > 0.0) {
+        strbuf += wxString::Format(_(" (%.3g steps/s)"), mainptr->stepspersec);
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 void StatusBar::DrawStatusBar(wxDC& dc, wxRect& updaterect)
 {
     int wd, ht;
@@ -351,9 +362,11 @@ void StatusBar::DrawStatusBar(wxDC& dc, wxRect& updaterect)
             if (currlayer->currexpo < 0) {
                 // show delay in secs
                 strbuf.Printf(_("Delay = %gs"), (double)GetCurrentDelay() / 1000.0);
+                AppendStepRate(strbuf);
             } else {
                 // no real need to show step as an exact number
                 strbuf.Printf(_("Step = %d^%d"), currlayer->currbase, currlayer->currexpo);
+                AppendStepRate(strbuf);
             }
             DisplayText(dc, strbuf, h_gen, STEPLINE);
         }
@@ -426,8 +439,10 @@ void StatusBar::DrawStatusBar(wxDC& dc, wxRect& updaterect)
             if (currlayer->currexpo < 0) {
                 // show delay in secs
                 strbuf.Printf(_("Delay=%gs"), (double)GetCurrentDelay() / 1000.0);
+                AppendStepRate(strbuf);
             } else {
                 strbuf.Printf(_("Step=%d^%d"), currlayer->currbase, currlayer->currexpo);
+                AppendStepRate(strbuf);
             }
             DisplayText(dc, strbuf, h_step, BASELINE1);
         }
@@ -510,7 +525,9 @@ void StatusBar::OnPaint(wxPaintEvent& WXUNUSED(event))
 #endif
     
     wxRect updaterect = GetUpdateRegion().GetBox();
+    double t0 = BenchNow();
     DrawStatusBar(dc, updaterect);
+    BenchAddStatus(BenchNow() - t0);
 }
 
 // -----------------------------------------------------------------------------
@@ -655,6 +672,9 @@ StatusBar::StatusBar(wxWindow* parent, wxCoord xorg, wxCoord yorg, int wd, int h
     dc.GetTextExtent(_("Scale=2^9999:1"), &textwd, &textht);
     h_step = h_scale + textwd + mingap;
     dc.GetTextExtent(_("Step=1000000000^9"), &textwd, &textht);
+    int stepwd;
+    dc.GetTextExtent(_("Step=10000^99 (99.9 steps/s)"), &stepwd, &textht);
+    if (stepwd > textwd) textwd = stepwd;
     h_xy = h_step + textwd + mingap;
     // when showexact is true:
     dc.GetTextExtent(_("X = "), &textwd, &textht);

@@ -24,6 +24,7 @@
 #include "wxmain.h"        // defines MainFrame class
 #include "wxstatus.h"      // defines StatusBar class
 #include "wxview.h"        // defines PatternView class
+#include "wxbench.h"       // for benchmode, BenchParseArgs, etc
 #include "wxutils.h"       // for Warning, Fatal, BeginProgress, etc
 #include "wxprefs.h"       // for GetPrefs, gollydir, rulesdir, userrules
 
@@ -150,7 +151,9 @@ int wx_poll::checkevents()
             viewptr->SetFocus();
         }
         insideYield++;
+        double y = BenchNow();
         wxGetApp().Yield(true);
+        BenchAddYield(BenchNow() - y);
         insideYield--;
     }
     return isInterrupted();
@@ -339,6 +342,16 @@ bool GollyApp::OnInit()
     statusptr->SetMessage(banner);
     
     mainptr->NewPattern();
+    
+    // in benchmark mode the remaining args are settings, and start scripts are
+    // skipped so they can't change the benchmark conditions
+    if (BenchParseArgs(argc, argv, initdir)) {
+        if (maximize) mainptr->Maximize(true);
+        mainptr->Show(true);
+        SetTopWindow(mainptr);
+        BenchStart();
+        return true;
+    }
     
     // script/pattern files are stored in the pendingfiles array for later processing
     // in OnIdle; this avoids a crash in Win app if a script is run before showing

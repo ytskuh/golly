@@ -1501,6 +1501,7 @@ void SavePrefs()
     fprintf(f, "random_fill=%d (1..100)\n", randomfill);
     fprintf(f, "min_delay=%d (0..%d millisecs)\n", mindelay, MAX_DELAY);
     fprintf(f, "max_delay=%d (0..%d millisecs)\n", maxdelay, MAX_DELAY);
+    fprintf(f, "par_threads=%d (1..%d)\n", parthreads, MAX_THREADS);
     fprintf(f, "auto_fit=%d\n", currlayer->autofit ? 1 : 0);
     fprintf(f, "hyperspeed=%d\n", currlayer->hyperspeed ? 1 : 0);
     fprintf(f, "hash_info=%d\n", currlayer->showhashinfo ? 1 : 0);
@@ -2067,6 +2068,13 @@ void GetPrefs()
             sscanf(value, "%d", &maxdelay);
             if (maxdelay < 0) maxdelay = 0;
             if (maxdelay > MAX_DELAY) maxdelay = MAX_DELAY;
+
+        } else if (strcmp(keyword, "par_threads") == 0) {
+            int n;
+            sscanf(value, "%d", &n);
+            if (n < 1) n = 1;
+            if (n > MAX_THREADS) n = MAX_THREADS;
+            SetParallelThreads(n);
 
         } else if (strcmp(keyword, "auto_fit") == 0) {
             initautofit = value[0] == '1';
@@ -2698,6 +2706,7 @@ enum {
     PREF_STEP_NOTE,
     PREF_MIN_DELAY,
     PREF_MAX_DELAY,
+    PREF_PAR_THREADS,
     PREF_RULES_BUTT,
     PREF_RULES_BOX,
     // View prefs
@@ -3050,15 +3059,18 @@ void PrefsDialog::OnSpinCtrlChar(wxKeyEvent& event)
             wxSpinCtrl* s2 = (wxSpinCtrl*) FindWindowById(PREF_BASE_STEP);
             wxSpinCtrl* s3 = (wxSpinCtrl*) FindWindowById(PREF_MIN_DELAY);
             wxSpinCtrl* s4 = (wxSpinCtrl*) FindWindowById(PREF_MAX_DELAY);
+            wxSpinCtrl* s5 = (wxSpinCtrl*) FindWindowById(PREF_PAR_THREADS);
             wxTextCtrl* t1 = s1->GetText();
             wxTextCtrl* t2 = s2->GetText();
             wxTextCtrl* t3 = s3->GetText();
             wxTextCtrl* t4 = s4->GetText();
+            wxTextCtrl* t5 = s5->GetText();
             wxWindow* focus = FindFocus();
             if ( focus == t1 ) { s2->SetFocus(); s2->SetSelection(ALL_TEXT); }
             if ( focus == t2 ) { s3->SetFocus(); s3->SetSelection(ALL_TEXT); }
             if ( focus == t3 ) { s4->SetFocus(); s4->SetSelection(ALL_TEXT); }
-            if ( focus == t4 ) { s1->SetFocus(); s1->SetSelection(ALL_TEXT); }
+            if ( focus == t4 ) { s5->SetFocus(); s5->SetSelection(ALL_TEXT); }
+            if ( focus == t5 ) { s1->SetFocus(); s1->SetSelection(ALL_TEXT); }
         } else if ( currpage == VIEW_PAGE ) {
             wxSpinCtrl* s1 = (wxSpinCtrl*) FindWindowById(PREF_BOLD_SPACING);
             wxSpinCtrl* s2 = (wxSpinCtrl*) FindWindowById(PREF_SENSITIVITY);
@@ -3613,6 +3625,17 @@ wxPanel* PrefsDialog::CreateControlPrefs(wxWindow* parent)
     hbox4->Add(new wxStaticText(panel, wxID_STATIC, _("millisecs")),
                0, wxALIGN_CENTER_VERTICAL, 0);
 
+    // par_threads
+
+    wxBoxSizer* hbox5 = new wxBoxSizer(wxHORIZONTAL);
+    hbox5->Add(new wxStaticText(panel, wxID_STATIC, _("Threads for Parallel algorithms:")),
+               0, wxALIGN_CENTER_VERTICAL, 0);
+    wxSpinCtrl* spin5 = new MySpinCtrl(panel, PREF_PAR_THREADS, wxEmptyString,
+                                       wxDefaultPosition, wxDefaultSize);
+    hbox5->Add(spin5, 0, wxLEFT | wxRIGHT | wxALIGN_CENTER_VERTICAL, SPINGAP);
+    hbox5->Add(new wxStaticText(panel, wxID_STATIC, _("(used by universes created afterwards)")),
+               0, wxALIGN_CENTER_VERTICAL, 0);
+
     // user_rules
 
     wxButton* rulesbutt = new wxButton(panel, PREF_RULES_BUTT, _("Your Rules..."));
@@ -3641,6 +3664,10 @@ wxPanel* PrefsDialog::CreateControlPrefs(wxWindow* parent)
     vbox->AddSpacer(S2VGAP);
     vbox->Add(hbox4, 0, wxLEFT | wxRIGHT, LRGAP);
 
+    vbox->AddSpacer(5);
+    vbox->AddSpacer(GROUPGAP);
+    vbox->Add(hbox5, 0, wxLEFT | wxRIGHT, LRGAP);
+
     vbox->AddSpacer(15);
     vbox->AddSpacer(GROUPGAP);
     vbox->Add(hrbox, 0, wxLEFT | wxRIGHT, LRGAP);
@@ -3652,6 +3679,7 @@ wxPanel* PrefsDialog::CreateControlPrefs(wxWindow* parent)
     spin2->SetRange(2, MAX_BASESTEP);        spin2->SetValue(algoinfo[algopos1]->defbase);
     spin3->SetRange(0, MAX_DELAY);           spin3->SetValue(mindelay);
     spin4->SetRange(0, MAX_DELAY);           spin4->SetValue(maxdelay);
+    spin5->SetRange(1, MAX_THREADS);         spin5->SetValue(parthreads);
     spin1->SetFocus();
     spin1->SetSelection(ALL_TEXT);
     algomenu->SetSelection(algopos1);
@@ -4691,6 +4719,8 @@ bool PrefsDialog::ValidatePage()
             return false;
         if ( BadSpinVal(PREF_MAX_DELAY, 0, MAX_DELAY, _("Maximum delay")) )
             return false;
+        if ( BadSpinVal(PREF_PAR_THREADS, 1, MAX_THREADS, _("Threads for Parallel algorithms")) )
+            return false;
 
     } else if (currpage == VIEW_PAGE) {
         if ( BadSpinVal(PREF_BOLD_SPACING, 2, MAX_SPACING, _("Spacing of bold grid lines")) )
@@ -4785,6 +4815,7 @@ bool PrefsDialog::TransferDataFromWindow()
     }
     mindelay = GetSpinVal(PREF_MIN_DELAY);
     maxdelay = GetSpinVal(PREF_MAX_DELAY);
+    SetParallelThreads(GetSpinVal(PREF_PAR_THREADS));
     userrules = newuserrules;
 
     // VIEW_PAGE

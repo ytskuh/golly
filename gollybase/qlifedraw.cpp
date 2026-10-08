@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdlib>
 #include "util.h"
+#include "qlifecuda.h"
+#include <climits>
 
 const int logbmsize = 8 ;                   // *must* be 8 in this code
 const int bmsize = (1<<logbmsize) ;
@@ -482,6 +484,12 @@ void qlifealgo::draw(viewport &viewarg, liferender &renderarg) {
    uviewh = view->getheight() ;
    oddgen = getGeneration().odd() ;
    kadd = oddgen ? 8 : 0 ;
+   if (gpuahead) {
+      gpudraw() ;
+      renderer = 0 ;
+      view = 0 ;
+      return ;
+   }
    int xoff, yoff ;
    if (view->getmag() > 0) {
       pmag = 1 << (view->getmag()) ;
@@ -768,6 +776,24 @@ int qlifealgo::getvbitsfromleaves(vector<supertile *> vec) {
 }
 
 void qlifealgo::findedges(bigint *ptop, bigint *pleft, bigint *pbottom, bigint *pright) {
+#ifdef ENABLE_CUDA
+   if (gpuahead) {
+      long long l, t, r, b ;
+      if (qlgpu_edges(gpu, generation.odd(), l, t, r, b)) {
+         *ptop = bigint(t) ;
+         *pleft = bigint(l) ;
+         *pbottom = bigint(b) ;
+         *pright = bigint(r) ;
+      } else {
+         // empty pattern: impossible edges, as below
+         *ptop = 1 ;
+         *pleft = 1 ;
+         *pbottom = 0 ;
+         *pright = 0 ;
+      }
+      return ;
+   }
+#endif
    // AKT: following code is from fit() but all goal/size stuff
    // has been removed so it finds the exact pattern edges
    bigint xmin = 0 ;
@@ -879,6 +905,8 @@ void qlifealgo::findedges(bigint *ptop, bigint *pleft, bigint *pbottom, bigint *
 }
 
 void qlifealgo::fit(viewport &view, int force) {
+   if (gpuahead)
+      gpusync() ;
    bigint xmin = 0 ;
    bigint xmax = 1 ;
    bigint ymin = 0 ;
@@ -1036,4 +1064,56 @@ void qlifealgo::lowerRightPixel(bigint &x, bigint &y, int mag) {
    y -= bmin ;
    y += 1 ;
    y -= oddgen ;
+}
+
+/*
+ *   Draw the cells of the GPU (see "GPU generations" in qlifealgo.cpp): it
+ *   makes a bit image of the view, one element per cell, or per block of
+ *   cells aligned as lowerRightPixel says when zoomed out, and the
+ *   non-empty 256x256 parts are blitted as renderbm does.
+ */
+void qlifealgo::gpudraw() {
+#ifdef ENABLE_CUDA
+   int vm = view->getmag() ;
+   int ls = vm > 0 ? 0 : -vm ;
+   pmag = vm > 0 ? 1 << vm : 1 ;
+   int w = vm > 0 ? ((uvieww - 1) >> vm) + 1 : uvieww ;
+   int h = vm > 0 ? ((uviewh - 1) >> vm) + 1 : uviewh ;
+   pair<bigint, bigint> c = view->at(0, 0) ;
+   if (vm < 0)
+      lowerRightPixel(c.first, c.second, vm) ;
+   // the cells lie within int coordinates; a view much farther away shows none
+   double cx = c.first.todouble(), cy = c.second.todouble() ;
+   if (cx < -1e15 || cx > 1e15 || cy < -1e15 || cy > 1e15)
+      return ;
+   std::vector<unsigned int> bits ;
+   qlgpu_draw(gpu, generation.odd(), (long long)cx, (long long)cy, ls, w, h, bits) ;
+   int ow = (w + 31) / 32 ;
+   for (int by = 0 ; by < h ; by += bmsize)
+      for (int bx = 0 ; bx < w ; bx += bmsize) {
+         int any = 0 ;
+         for (int j = by ; j < by + bmsize && j < h && !any ; j++)
+            for (int k = bx / 32 ; k < (bx + bmsize) / 32 && k < ow ; k++)
+               any |= bits[(size_t)j * ow + k] != 0 ;
+         if (!any)
+            continue ;
+         unsigned int *pix = (unsigned int *)pixbuf ;
+         int state = renderer->justState() || pmag > 1 ;
+         for (int j = 0 ; j < bmsize ; j++)
+            for (int i = 0 ; i < bmsize ; i++) {
+               int x = bx + i, y = by + j ;
+               int live = x < w && y < h &&
+                  ((bits[(size_t)y * ow + (x >> 5)] >> (31 - (x & 31))) & 1) ;
+               if (state)
+                  pixbuf[j * bmsize + i] = live ;
+               else
+                  pix[j * bmsize + i] = live ? liveRGBA : deadRGBA ;
+            }
+         int rx = bx * pmag, ry = by * pmag, rw = bmsize * pmag, rh = bmsize * pmag ;
+         if (renderer->justState())
+            renderer->stateblit(rx, ry, rw, rh, pixbuf) ;
+         else
+            renderer->pixblit(rx, ry, rw, rh, pixbuf, pmag) ;
+      }
+#endif
 }

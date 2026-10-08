@@ -53,6 +53,18 @@ extern AlgoData* algoinfo[MAX_ALGOS];   // static info for each algorithm
 extern wxMenu* algomenu;                // menu of algorithm names
 extern wxMenu* algomenupop;             // copy of algomenu for PopupMenu calls
 extern algo_type initalgo;              // initial algorithm
+extern algo_type qlifepar_algo;         // QuickLife Parallel (set by InitAlgorithms)
+extern algo_type hlifepar_algo;         // HashLife Parallel (set by InitAlgorithms)
+extern algo_type qlifecuda_algo;        // QuickLife CUDA (set by InitAlgorithms; -1 without CUDA)
+extern int parthreads;                  // threads used by the Parallel algorithms
+
+bool IsQuickLife(algo_type algotype);
+// Return true for QuickLife and QuickLife Parallel (both use qlifealgo, which
+// stores the pattern in different bits depending on the generation's parity).
+
+void SetParallelThreads(int n);
+// Set parthreads; universes created afterwards by the Parallel algorithms
+// use n threads.
 
 // the following bitmaps are grayscale icons that can be used with any rules
 // with any number of states

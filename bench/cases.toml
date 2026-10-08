@@ -1,0 +1,365 @@
+# Benchmark cases for golly_bench.py.
+#
+# name      unique case name (prefix = algorithm: ql, hl, gen, ltl, jvn, rl, super)
+# pattern   path relative to the repo root
+# algo      algorithm name as shown in Golly's Control > Set Algorithm menu
+# base/expo step size: each step advances base^expo generations (Golly's step setting)
+# steps     number of steps; the run stops at generation steps * base^expo (bgolly -m, golly --bench gen=)
+# groups    which case groups include the case ("full" contains every case)
+# fixed_step  true: not calibrated; the step and steps are set by hand
+#
+# HashLife and QuickLife cases: 100 steps each; the step is 2^expo, chosen by
+# `golly_bench.py calibrate` with the original code (see README.md, Cases).
+# Calibrated 2026-10-07 on an Intel i9-12900HX laptop (host conformal) with
+# bgolly built from upstream commit dcbc0873.
+
+# ---- QuickLife ---------------------------------------------------------------
+
+[[case]]
+name = "ql-cambrian-explosion"      # chaotic growth to ~83M cells, active everywhere
+pattern = "Patterns/Life/Miscellaneous/cambrian-explosion.rle"
+algo = "QuickLife"
+base = 2
+expo = 8
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-oscillator-stamps"       # 240k cells of oscillators; no growth, no quiet regions
+pattern = "Patterns/Life/Oscillators/oscillator-stamp-collection-31January2023.rle"
+algo = "QuickLife"
+base = 2
+expo = 8
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-switch-engine-breeder"   # quadratic growth, mostly still debris
+pattern = "Patterns/Life/Breeders/switch-engine-breeder.rle"
+algo = "QuickLife"
+base = 2
+expo = 10
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-spacefiller"             # ~650M cells of periodic agar at the end (QuickLife skips most of it)
+pattern = "Patterns/Life/Breeders/spacefiller.rle"
+algo = "QuickLife"
+base = 2
+expo = 9
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-lfod-rule110"            # Life-like rule (not B3/S23)
+pattern = "Patterns/Life-Like/lfod-flying-rule110-simulator.rle"
+algo = "QuickLife"
+base = 2
+expo = 0
+steps = 3000
+fixed_step = true                   # bounded grid: bgolly only steps it 1 generation at a time
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-nontotalistic-bubbles"   # isotropic non-totalistic rule
+pattern = "Patterns/Non-Totalistic/bubbles-in-phoenician-agar.rle"
+algo = "QuickLife"
+base = 2
+expo = 0
+steps = 5000
+fixed_step = true                   # bounded grid: bgolly only steps it 1 generation at a time
+groups = ["quick", "full"]
+
+[[case]]
+name = "ql-ordovician-radiation"    # chaotic growth to ~21M cells
+pattern = "Patterns/Life/Miscellaneous/ordovician-radiation.rle"
+algo = "QuickLife"
+base = 2
+expo = 7
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "ql-p90-rake-factory"        # dense, busy breeder
+pattern = "Patterns/Life/Breeders/p90-rake-factory.rle"
+algo = "QuickLife"
+base = 2
+expo = 7
+steps = 100
+groups = ["full"]
+
+
+
+[[case]]
+name = "ql-52513m"                  # sparse methuselah spread over 26k x 26k
+pattern = "Patterns/Life/Methuselahs/52513m.rle"
+algo = "QuickLife"
+base = 2
+expo = 13
+steps = 100
+groups = ["full"]
+
+# ---- HashLife ----------------------------------------------------------------
+
+[[case]]
+name = "hl-metacatacryst"
+pattern = "Patterns/HashLife/Eventful/metacatacryst.mc"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "hl-metapixel-galaxy"
+pattern = "Patterns/HashLife/Metacell/metapixel-galaxy.mc.gz"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "hl-fangtian2-immigration"
+pattern = "Patterns/HashLife/Metacell/fangtian2-immigration-figure-eight.mc.gz"
+algo = "HashLife"
+base = 2
+expo = 18
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "hl-totalperiodic"
+pattern = "Patterns/HashLife/Eventful/totalperiodic.mc"
+algo = "HashLife"
+base = 2
+expo = 16
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-hexadecimal"
+pattern = "Patterns/HashLife/Metacell/hexadecimal.mc.gz"
+algo = "HashLife"
+base = 2
+expo = 14
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-demonoid"
+pattern = "Patterns/HashLife/Constructions/demonoid-c512-hashlife-friendly.mc.gz"
+algo = "HashLife"
+base = 2
+expo = 15
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-linear-propagator"
+pattern = "Patterns/HashLife/Constructions/linear-propagator-p237228340.mc.gz"
+algo = "HashLife"
+base = 2
+expo = 18
+steps = 100
+groups = ["full"]
+
+# One cell high, N cells wide horizontal line (bench/patterns/line-N.rle).
+# Chaotic for the first ~10^4 generations, then still life, oscillators and
+# escaping gliders, so nearly all of the work is in the first step.
+
+[[case]]
+name = "hl-line-1024"
+pattern = "bench/patterns/line-1024.rle"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "hl-line-2048"
+pattern = "bench/patterns/line-2048.rle"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-line-4096"
+pattern = "bench/patterns/line-4096.rle"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-line-8192"
+pattern = "bench/patterns/line-8192.rle"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-line-16384"
+pattern = "bench/patterns/line-16384.rle"
+algo = "HashLife"
+base = 2
+expo = 30
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-line-32768"
+pattern = "bench/patterns/line-32768.rle"
+algo = "HashLife"
+base = 2
+expo = 14
+steps = 100
+groups = ["full"]
+
+[[case]]
+name = "hl-line-65536"
+pattern = "bench/patterns/line-65536.rle"
+algo = "HashLife"
+base = 2
+expo = 12
+steps = 100
+groups = ["full"]
+
+# ---- Generations -------------------------------------------------------------
+
+[[case]]
+name = "gen-bloomerang"
+pattern = "Patterns/Generations/bloomerang.rle"
+algo = "Generations"
+base = 8
+expo = 0
+steps = 500
+groups = ["quick", "full"]
+
+[[case]]
+name = "gen-g3b3s23-breeder"
+pattern = "Patterns/Generations/g3b3s23-breeder.rle"
+algo = "Generations"
+base = 8
+expo = 0
+steps = 2000
+groups = ["full"]
+
+[[case]]
+name = "gen-fireworks"
+pattern = "Patterns/Generations/fireworks.rle"
+algo = "Generations"
+base = 8
+expo = 0
+steps = 300
+groups = ["full"]
+
+# ---- Larger than Life --------------------------------------------------------
+
+[[case]]
+name = "ltl-waffle"
+pattern = "Patterns/Larger-than-Life/waffle.rle"
+algo = "Larger than Life"
+base = 10
+expo = 0
+steps = 300
+groups = ["quick", "full"]
+
+[[case]]
+name = "ltl-modern-art"
+pattern = "Patterns/Larger-than-Life/modern-art.rle"
+algo = "Larger than Life"
+base = 10
+expo = 0
+steps = 100
+groups = ["quick", "full"]
+
+[[case]]
+name = "ltl-r500-alien-bug"         # range-500 neighborhood
+pattern = "Patterns/Larger-than-Life/r500-alien-bug.rle"
+algo = "Larger than Life"
+base = 10
+expo = 0
+steps = 300
+groups = ["full"]
+
+[[case]]
+name = "ltl-996c-2-spaceship"
+pattern = "Patterns/Larger-than-Life/996c-2-spaceship.rle"
+algo = "Larger than Life"
+base = 10
+expo = 0
+steps = 300
+groups = ["full"]
+
+[[case]]
+name = "ltl-gnarl"
+pattern = "Patterns/Larger-than-Life/gnarl.rle"
+algo = "Larger than Life"
+base = 10
+expo = 0
+steps = 1000
+groups = ["full"]
+
+# ---- JvN, RuleLoader, Super --------------------------------------------------
+
+[[case]]
+name = "jvn-loop-replicator"
+pattern = "Patterns/Self-Rep/JvN/JvN-loop-replicator.rle.gz"
+algo = "JvN"
+base = 8
+expo = 0
+steps = 200
+groups = ["quick", "full"]
+
+[[case]]
+name = "rl-tmgas"                   # Margolus neighborhood
+pattern = "Patterns/Margolus/TMGas_largeWithHole.rle"
+algo = "RuleLoader"
+base = 8
+expo = 0
+steps = 400
+groups = ["quick", "full"]
+
+[[case]]
+name = "rl-ed-rep"
+pattern = "Patterns/Other-Rules/Ed-rep.rle"
+algo = "RuleLoader"
+base = 8
+expo = 0
+steps = 1000
+groups = ["full"]
+
+[[case]]
+name = "rl-banks-iv"
+pattern = "Patterns/Self-Rep/Banks/Banks-IV-constructor.rle.gz"
+algo = "RuleLoader"
+base = 8
+expo = 0
+steps = 1000
+groups = ["full"]
+
+[[case]]
+name = "rl-wireworld-primes"
+pattern = "Patterns/WireWorld/primes.mc"
+algo = "RuleLoader"
+base = 8
+expo = 4
+steps = 256
+groups = ["full"]
+
+[[case]]
+name = "super-exploratorium"
+pattern = "Patterns/Super/exploratorium.rle.gz"
+algo = "Super"
+base = 8
+expo = 0
+steps = 500
+groups = ["quick", "full"]

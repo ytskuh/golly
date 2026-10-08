@@ -9,6 +9,23 @@
 #include "lifealgo.h"
 #include "liferules.h"
 #include <vector>
+#include <atomic>
+struct qlpar ;
+struct qlgpu ;
+struct qlgbrick ;
+/*
+ *   An outer-totalistic Moore rule for the vector brick kernel (see
+ *   qlifealgo.cpp): with T the number of live cells in a 3x3 block
+ *   (center included), a dead center is born if mb[T] and a live center
+ *   survives if ms[T] (masks are 0 or all ones).
+ */
+struct qlvrule {
+   int life ;                    // B3/S23
+   unsigned int mb[10], ms[10] ;
+} ;
+typedef int (*qlkernel)(unsigned int *b, unsigned int r,
+                        const unsigned int *u, unsigned int ur,
+                        int recomp, unsigned int df, const qlvrule *ru) ;
 /*
  *   The smallest unit of the universe is the `slice', which is a
  *   4 (horizontal) by 8 (vertical) chunk of the world.  Each slice
@@ -87,10 +104,14 @@ struct brick { /* 64 bytes */
  *   The tiles are 32 bytes each; they can hold up to four bricks, so the
  *   memory consumption of the tiles tends to be small.
  */
-struct tile { /* 32 bytes */
+// Tiles and supertiles take whole cache lines, so that threads computing
+// different parts of the universe never write the same line (see
+// "Parallel generations" in qlifealgo.cpp).
+struct alignas(64) tile { /* 64 bytes */
    struct brick *b[4] ;
    short c[6] ;
    int flags, localdeltaforward ;
+   int frozen ;         // part of a shadow that is not computed (see qlifealgo.cpp)
 } ;
 /*
  *   Supertiles hold pointers to eight subtiles, which can either be 
@@ -142,10 +163,14 @@ struct tile { /* 32 bytes */
  *   256x32 chunk of the universe, so the total memory consumption due to
  *   supertiles tends to be small.
  */
-struct supertile { /* 44 bytes */
+struct alignas(128) supertile { /* 128 bytes */
    struct supertile *d[8] ;
    int flags ;
    int pop[2] ;
+   // used by parallel generations (see qlifealgo.cpp); amark is -1 in
+   // frozen parts of shadows
+   int amark, reg ;
+   float cost ;
 } ;
 /*
  *   This is a common header for chunks of memory linked together.
@@ -186,6 +211,7 @@ struct linkedmem {
  *   supertiles at each level.  Setting this to 40 limits the number of
  *   levels to 40, which is sufficient for a 2^65x2^62 universe.
  */
+const int QLMODES = 5 ;   // modes of parallel generations (see qlifealgo::parpick)
 class qlifealgo : public lifealgo {
 public:
    qlifealgo() ;
@@ -197,10 +223,15 @@ public:
    virtual void endofpattern() {
      poller->bailIfCalculating() ;
      popValid = 0 ;
+     gpuvalid = 0 ;
    }
    virtual void setIncrement(bigint inc) { increment = inc ; }
    virtual void setIncrement(int inc) { increment = inc ; }
-   virtual void setGeneration(bigint gen) { generation = gen ; }
+   virtual void setGeneration(bigint gen) {
+      if (gpuahead) gpusync() ;
+      gpuvalid = 0 ;
+      generation = gen ;
+   }
    virtual const bigint &getPopulation() ;
    virtual int isEmpty() ;
    // can we do the gen count doubling? only hashlife
@@ -220,21 +251,84 @@ public:
       return "No native format for qlifealgo yet." ;
    }
    static void doInitializeAlgoInfo(staticAlgoInfo &) ;
+   static void doInitializeParAlgoInfo(staticAlgoInfo &) ;
+   static void doInitializeCudaAlgoInfo(staticAlgoInfo &) ;
+   // a universe made as "QuickLife CUDA": generations run on the GPU
+   // when the rule and grid allow (see "GPU generations" in qlifealgo.cpp)
+   int usegpu ;
+   // parallel generations: nthreads > 1 uses that many threads.  It starts
+   // as numthreads, or parthreads for a universe made as "QuickLife Parallel"
+   int nthreads ;
+   static int numthreads ;
+   static int parthreads ;
+   void parrun(int id) ;   // used by the worker threads
 private:
+   qlgpu *gpu ;
+   int gpufailed ;      // no usable GPU
+   int gpuvalid ;       // the GPU holds the current generation
+   int gpuahead ;       // ... and the tree does not
+   int gpuok() ;
+   void gpustep() ;
+   void gpusync() ;
+   void gpudraw() ;
+   void gpubricks(supertile *p, int lev, int xdel, int ydel, int odd, std::vector<qlgbrick> &v) ;
+   void putbrick(const qlgbrick &k, int odd) ;
+   void freetree(supertile *p, int lev) ;
    linkedmem *filllist(int size) ;
+   linkedmem *grab(linkedmem *&list, int size, int which) ;
    brick *newbrick() ;
    tile *newtile() ;
    supertile *newsupertile(int lev) ;
    void uproot() ;
-   int doquad01(supertile *zis, supertile *edge,
-                supertile *par, supertile *cor, int lev) ;
-   int doquad10(supertile *zis, supertile *edge,
-                supertile *par, supertile *cor, int lev) ;
-   int p01(tile *p, tile *pr, tile *pd, tile *prd) ;
-   int p10(tile *plu, tile *pu, tile *pl, tile *p) ;
+   template<int PAR> int doquad01(supertile *zis, supertile *edge,
+                                  supertile *par, supertile *cor, int lev, int ex) ;
+   template<int PAR> int doquad10(supertile *zis, supertile *edge,
+                                  supertile *par, supertile *cor, int lev, int ex) ;
+   template<int PAR> int p01(tile *p, tile *pr, tile *pd, tile *prd, int prex) ;
+   template<int PAR> int p10(tile *plu, tile *pu, tile *pl, tile *p, int plex) ;
+   void parinit() ;
+   void parstop() ;
+   int parok() ;
+   int parmaxgens() ;
+   int parpick() ;
+   void partimed(int mode, double secs, double tiles) ;
+   void parepoch(int e, int mode) ;
+   void parbarrier(int id, long long b, int global) ;
+   void parshadows(int e) ;
+   supertile *shcopy(supertile *s, int lev, int x0, int y0, int band) ;
+   std::vector<supertile *> frozennull ;   // frozen empty tile (0) and supertiles
+   void shfree(supertile *s, int lev) ;
+   void parregion(int k, int q, int odd) ;
+   int isregion(supertile *s) ;
+   int parmark(supertile *n, int lev) ;
+   supertile *parcollect(supertile *const nb[9], int lev, unsigned long long key) ;
+   void parlink(supertile *const nb[9], int lev) ;
+   int parcombine(supertile *n, int lev, int q, int odd) ;
+   void setruletable(int odd) ;
+   qlpar *par ;
+   int inpar ;
+   int parlev ;         // level of the regions
+   int nmodes, modethreads[QLMODES] ;   // threads of each mode (see parpick)
+   int parlevm[QLMODES] ;   // best region level of each mode (see parpick)
+   int parstamp ;       // marks supertiles of the current epoch (amark, reg)
+   double tmode[QLMODES] ;    // recent time per tile computed of each mode (see parpick)
+   double work ;        // tiles computed per generation in the last run (see parpick)
+   double wlost[QLMODES] ;    // work when each mode last lost a comparison
+   double tclock ;      // seconds in runs of generations
+   double tnext[QLMODES] ;    // when (tclock) to try each mode again
+   double tlast[QLMODES] ;    // when each mode was last tried
+   // the same for the level below (0) and above (1) each mode's
+   double lnext[QLMODES][2], lwork[QLMODES][2], llast[QLMODES][2] ;
+   int runlev, lastlev, trylev ;   // level of this run, the last, the try
+   int trylevel ;       // whether the try is of a level (else of a mode)
+   int lastmode ;
+   int trymode, tryleft ;   // the mode being tried, runs left
+   double trywork, trysecs, trytiles, trysum, trysumtiles ;
    G_INT64 find_set_bits(supertile *p, int lev, int gm1) ;
    int isEmpty(supertile *p, int lev, int gm1) ;
-   supertile *mdelete(supertile *p, int lev) ;
+   supertile *mdelete(supertile *p, int lev, int odd) ;
+   void release(linkedmem *&list, int which, void *p) ;
+   void parclean(int k, int odd) ;
    G_INT64 popcount() ;
    int uproot_needed() ;
    void dogen() ;
@@ -257,14 +351,23 @@ private:
    bigint bmin, bmax ;
    bigint population ;
    int popValid ;
+   // the allocation state, which threads of parallel generations write
+   // (under alloclock, see grab), on cache lines apart from the fields the
+   // generation code reads
+   friend struct qlallock ;
+   alignas(64) std::atomic_flag alloclock ;
    linkedmem *tilelist, *supertilelist, *bricklist ;
    linkedmem *memused ;
-   brick *emptybrick ;
+   g_uintptr_t usedmemory ;
+   alignas(64) brick *emptybrick ;
    tile *emptytile ;
    supertile *root, *nullroot, *nullroots[40] ;
    int cleandowncounter ;
-   g_uintptr_t maxmemory, usedmemory ;
-   char *ruletable ;
+   g_uintptr_t maxmemory ;
+   // vector brick kernel: vrule[k] for qliferules.rule0/rule1 if vecok[k]
+   qlvrule vrule[2] ;
+   int vecok[2] ;
+   qlkernel kern01, kern10 ;
    // when drawing, these are used
    liferender *renderer ;
    viewport *view ;

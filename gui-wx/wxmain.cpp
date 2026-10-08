@@ -34,6 +34,7 @@
 #include "wxoverlay.h"     // for curroverlay
 #include "wxundo.h"        // for currlayer->undoredo->...
 #include "wxtimeline.h"    // for CreateTimelineBar, TimelineExists, etc
+#include "wxbench.h"       // for benchmode
 #include "wxmain.h"
 
 #ifdef __WXMAC__
@@ -1309,7 +1310,14 @@ void MainFrame::OnMenu(wxCommandEvent& event)
         case ID_SET_FOLDER:     SetFolder(); break;
         case ID_ADD_FOLDER:     AddFolder(); break;
         case ID_REMOVE_FOLDER:  RemoveFolder(); break;
+#ifdef __WXGTK__
+        // open the dialog after GTK has finished handling the menu click; on Wayland
+        // a modal dialog started inside the menu's handler was never shown and the
+        // main window stopped responding
+        case wxID_PREFERENCES:  CallAfter([this] { ShowPrefsDialog(); }); break;
+#else
         case wxID_PREFERENCES:  ShowPrefsDialog(); break;
+#endif
         case wxID_EXIT:         QuitApp(); break;
             
         // Edit menu
@@ -1919,7 +1927,8 @@ void MainFrame::OnClose(wxCloseEvent& event)
     FinishScripting();
     
     // save main window location and other user preferences
-    SavePrefs();
+    // (but not after a benchmark run, which changes window size, algo, etc)
+    if (!benchmode) SavePrefs();
     
     // delete any temporary files
     if (wxFileExists(luafile)) wxRemoveFile(luafile);

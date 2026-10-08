@@ -26,6 +26,7 @@
 #include "wxalgos.h"        // for *_ALGO, algo_type, CreateNewUniverse, etc
 #include "wxlayer.h"        // for currlayer, etc
 #include "wxtimeline.h"     // for TimelineExists, UpdateTimelineBar, etc
+#include "wxbench.h"        // for BenchStepBegin, etc
 
 // This module implements Control menu functions.
 
@@ -289,7 +290,7 @@ const char* MainFrame::ChangeGenCount(const char* genstring, bool inundoredo)
     }
     
     // need IsParityShifted() method???
-    if (currlayer->algtype == QLIFE_ALGO && newgen.odd() != oldgen.odd()) {
+    if (IsQuickLife(currlayer->algtype) && newgen.odd() != oldgen.odd()) {
         // qlife stores pattern in different bits depending on gen parity,
         // so we need to create a new qlife universe, set its gen, copy the
         // current pattern to the new universe, then switch to that universe
@@ -560,6 +561,7 @@ void MainFrame::DisplayPattern()
 bool MainFrame::StepPattern()
 {
     lifealgo* curralgo = currlayer->algo;
+    BenchStepBegin();
     if (curralgo->unbounded && (curralgo->gridwd > 0 || curralgo->gridht > 0)) {
         // bounded grid, so temporarily set the increment to 1 so we can call
         // CreateBorderCells() and DeleteBorderCells() around each step()
@@ -595,6 +597,7 @@ bool MainFrame::StepPattern()
         curralgo->step();
         if (curralgo->isrecording()) curralgo->extendtimeline();
     }
+    BenchStepEnd();
     
     if (currlayer->autofit) viewptr->FitInView(0);
     
@@ -608,6 +611,8 @@ bool MainFrame::StepPattern()
         }
         return false;
     }
+    
+    if (BenchStopNow()) return false;
     
     return true;
 }
@@ -792,6 +797,11 @@ void MainFrame::StartGenerating()
     // for hyperspeed
     hypdown = 64;
 
+    // for the steps per second shown in the status bar
+    stepspersec = 0.0;
+    ratesteps = 0;
+    ratestart = stopwatch->TimeInMicro();
+
     generating = true;
     wxGetApp().PollerReset();
     UpdateUserInterface();
@@ -866,6 +876,7 @@ void MainFrame::OnGenTimer(wxTimerEvent& WXUNUSED(event))
 {
     if (in_timer) return;
     in_timer = true;
+    BenchBatchBegin();
     
     if (!StepPattern()) {
         if (generating) {
@@ -877,6 +888,15 @@ void MainFrame::OnGenTimer(wxTimerEvent& WXUNUSED(event))
         }
         in_timer = false;
         return;
+    }
+    
+    // update the steps per second shown in the status bar about twice a second
+    ratesteps++;
+    double ratesecs = (stopwatch->TimeInMicro() - ratestart).ToDouble() / 1000000.0;
+    if (ratesecs >= 0.5) {
+        stepspersec = ratesteps / ratesecs;
+        ratesteps = 0;
+        ratestart = stopwatch->TimeInMicro();
     }
     
     if (currlayer->algo->isrecording()) {
@@ -908,6 +928,7 @@ void MainFrame::OnGenTimer(wxTimerEvent& WXUNUSED(event))
         FinishUp();
     }
     
+    BenchBatchEnd();
     in_timer = false;
 }
 
