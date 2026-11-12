@@ -1,0 +1,7 @@
+#N log-polynomial-width-growth.rle
+#O "AforAmpere", 4 October 2021
+#C The width at time t is around 2*log_1.4655712(t)-5.1,
+#C where 1.4655712 is the root of x^3 - x^2 - 1.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=136288#p136288
+x = 2, y = 4, rule = B2e3aein4ar5ir6i/S1c2aik3aj4qr5jq6c
+o$bo$bo$o!

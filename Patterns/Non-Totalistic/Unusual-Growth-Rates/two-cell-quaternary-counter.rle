@@ -1,0 +1,7 @@
+#N two-cell-quaternary-counter.rle
+#O "AforAmpere", 28 April 2021
+#C Two cells evolve into a pattern that counts in base 4.
+#C (we think.)
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=129165#p129165
+x = 3, y = 1, rule = B2aei3ekn4eijnqr5jny6aci8/S01e2ekn3cjnry4-aeqw5-aqy6ac7e8
+obo!

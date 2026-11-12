@@ -1,0 +1,7 @@
+#N 15c-85265o.rle
+#O "NimbleRogue", 16 Feburary 2024
+#C This is a spaceship with an astonishingly slow speed of 15c/85265.
+#C It seemingly stabilizes at around generation 9,000 but eventually
+#C fail and regenerate itself with a small displacement.
+x = 10, y = 4, rule = B2-an3-iqy4iknrtz5aijqy6aei78/S02ck3nqy4eiqrtwy5-ekq6-i78
+2bo4bo$3b4o$ob6obo$2b6o!

@@ -1,0 +1,7 @@
+#N slow-counting-cross.rle
+#O Jiaohu Yu, 29 December 2022
+#C Two cells in this rule evolve into a cross-shaped fourfold
+#C binary counter, whose period appears to be 1224.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=155378#p155378
+x = 3, y = 1, rule = B2cin3aer4eijqr5ik6-ak8/S01c2cn3k4kqtwy5aky6ei78
+obo!

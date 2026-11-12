@@ -1,0 +1,8 @@
+#N empty-space-unary-counting-shuttle.rle
+#O "toroidalet", 5 September 2017
+#C A glider interacts with two beehives to push them farther out,
+#C progressively increasing the bounding box at a square root rate
+#C while maintaining a max population of 37.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=50553#p50553
+x = 13, y = 5, rule = B3-y4q5a/S23-e
+5bo4b2o$5bobobo2bo$b2o2b2o3b2o$o2bo$b2o!

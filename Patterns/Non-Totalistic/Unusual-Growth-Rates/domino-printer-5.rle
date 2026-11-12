@@ -1,0 +1,5 @@
+#N domino-printer-5.rle
+#O "AforAmpere", 4 October 2021
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=136288#p136288
+x = 2, y = 4, rule = B2e3aijr5iry/S1e2ik3a4a5q6a
+o$bo$bo$o!

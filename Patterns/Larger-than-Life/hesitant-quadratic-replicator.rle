@@ -1,0 +1,8 @@
+#N hesitant-quadratic-replicator.rle
+#O "LaundryPizza03", 12 July 2022
+#C A quadratic replicator with a perhaps amusing replication method: it remains in
+#C   the form of a hollow ring for several generations before spontaneously exploding.
+#C Reference:
+#C   https://conwaylife.com/forums/viewtopic.php?p=148193#p148193
+x = 10, y = 10, rule = R6,C2,S48-85,B49-68
+2b5o$b7o$9o$10o$10o$10o$10o$10o$9o$b7o!

@@ -1,0 +1,43 @@
+3D version=1 size=50 pos=13,13,19
+#N pentadecathlon-sandwich.rle3
+#O Andrew Trevorrow, 16 May 2018
+#C
+#C Much like how two-dimensional cellular automaton patterns can
+#C embed one-dimensional rules, three-dimensional cellular
+#C automaton patterns can embed two-dimensional rules.
+#C
+#C Carter Bays demonstrates in a 1987 paper that the 3D 2-state rule
+#C B567/S6 can support a "mini Conway universe", i.e. a region of
+#C space that evolves according to the familiar B3/S23 2D rule.
+#C
+#C In this example, a pentadecathlon is confined within a
+#C "time-space barrier", which is arbitrarily extensible.
+#C
+#C Bays's research article:
+#C http://www.complex-systems.com/pdf/01-3-1.pdf
+#C
+#C Reference:
+#C https://conwaylife.com/forums/viewtopic.php?f=9&t=3404#p60048
+x=24 y=24 z=12 rule=3D5..7/6
+6booboobbooboo$6booboobbooboo$bboo16boo$bboo16boo3$oo20boo$oo20boo$$
+oo20boo$oo20boo3$oo20boo$oo20boo$$oo20boo$oo20boo3$bboo16boo$bboo16b
+oo$6booboobbooboo$6booboobbooboo/6booboobbooboo$6booboobbooboo$3bo16b
+o$bbo18bo3$oo20boo$oo20boo$$oo20boo$oo20boo3$oo20boo$oo20boo$$oo20b
+oo$oo20boo3$bbo18bo$3bo16bo$6booboobbooboo$6booboobbooboo/$$3bo16bo
+$bbo18bo17$bbo18bo$3bo16bo/$$4b16o$3b18o$bboobooboobooboobooboo$bb20o
+$bb20o$bboobooboobooboobooboo$bb20o$bb20o$bboobooboobooboobooboo$bb
+20o$bb20o$bboobooboobooboobooboo$bb20o$bb20o$bboobooboobooboobooboo
+$bb20o$bb20o$bboobooboobooboobooboo$3b18o$4b16o//6booboobbooboo$6boo
+boobbooboo5$oo20boo$oo20boo$$oo20boo$oo7bo4bo7boo$7boob4oboo$9bo4bo
+$oo20boo$oo20boo$$oo20boo$oo20boo5$6booboobbooboo$6booboobbooboo/6b
+ooboobbooboo$6booboobbooboo5$oo20boo$oo20boo$$oo20boo$oo7bo4bo7boo$
+7boob4oboo$9bo4bo$oo20boo$oo20boo$$oo20boo$oo20boo5$6booboobbooboo$
+6booboobbooboo//$$4b16o$3b18o$bboobooboobooboobooboo$bb20o$bb20o$bb
+oobooboobooboobooboo$bb20o$bb20o$bboobooboobooboobooboo$bb20o$bb20o
+$bboobooboobooboobooboo$bb20o$bb20o$bboobooboobooboobooboo$bb20o$bb
+20o$bboobooboobooboobooboo$3b18o$4b16o/$$3bo16bo$bbo18bo17$bbo18bo$
+3bo16bo/6booboobbooboo$6booboobbooboo$3bo16bo$bbo18bo3$oo20boo$oo20b
+oo$$oo20boo$oo20boo3$oo20boo$oo20boo$$oo20boo$oo20boo3$bbo18bo$3bo16b
+o$6booboobbooboo$6booboobbooboo/6booboobbooboo$6booboobbooboo$bboo16b
+oo$bboo16boo3$oo20boo$oo20boo$$oo20boo$oo20boo3$oo20boo$oo20boo$$oo
+20boo$oo20boo3$bboo16boo$bboo16boo$6booboobbooboo$6booboobbooboo!

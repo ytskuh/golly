@@ -1,0 +1,6 @@
+#N two-cell-binary-counter.rle
+#O "AforAmpere", 28 April 2021
+#C Two cells evolve into a pattern that counts in base 2.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=129128#p129128
+x = 3, y = 1, rule = B2aei3e4ijkqrtz5cekn6ai8/S01e2en3-acei4-nq5-anry6a7e8
+obo!

@@ -1,0 +1,9 @@
+#N ruler-waves.rle
+#O "Ian07", 14 August 2022
+#C This replicator-esque pattern produces binary ruler formations
+#C at every generation (2^t)-2, for positive integers t.
+#C The populaton graph of this pattern appears to be a fractal
+#C curve, not unlike the Takagi function.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=149572#p149572
+x = 1, y = 2, rule = B2ac4i5r6i/S
+o$o!

@@ -1,0 +1,4 @@
+#N fredkin-hexagonal.rle
+#C All patterns in this rule replicate in seven directions.
+x = 15, y = 5, rule = B135/S0246H
+3o2bo2b2o2bo$o2bo2bobo3b2o$o3bob3o4bo$bo2bo2bobo$2b3o2bo2b2o2bo!

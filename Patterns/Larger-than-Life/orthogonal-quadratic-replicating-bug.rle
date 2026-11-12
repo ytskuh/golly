@@ -1,0 +1,8 @@
+#N orthogonal-quadratic-replicating-bug.rle
+#O "Moosey", 1 September 2019
+#C This range-3 variant of the Bugs rule has another bug which is a
+#C clean two-dimensional replicator.
+#C Reference:
+#C   https://conwaylife.com/forums/viewtopic.php?p=82183#p82183
+x = 8, y = 7, rule = R3,C2,S14-23,B14-18
+2b4o$b6o$b6o$3o2b3o$3o2b3o$bo4bo$2b4o!

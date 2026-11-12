@@ -1,0 +1,9 @@
+#N quadratic-replicator-like-linear-sawtooth.rle
+#O Connor Steppie, 10 January 2018
+#C A linear sawtooth made of four copies of a single unit that move
+#C outwards in a manner superficially resembling a quadratic
+#C replicator.
+#C Based on a late 2017 rule by "toroidalet": https://conwaylife.com/forums/viewtopic.php?p=52868#p52868
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=54904#p54904
+x = 11, y = 11, rule = B2ce3y4e5y6c/S1c2i3ciy4ct5ey6i7e8
+5bo$4bobo$5bo$5bo$bo7bo$ob2o3b2obo$bo7bo$5bo$5bo$4bobo$5bo!

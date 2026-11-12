@@ -1,0 +1,7 @@
+#N panconfigurational.rle
+#O H. H. P. M. P. Cole, 30 September 2023
+#C This temporally rotationally symmetric period-72 oscillator fits in a
+#C fixed bounding box of 3x3 in all phases.
+#C Source: https://conwaylife.com/forums/viewtopic.php?f=11&t=6047&p=168185#p168185
+x = 3, y = 3, rule = B2ei3er4aijny5inqr/S012ak3ajnr4i5ijn6a
+3o2$2bo!

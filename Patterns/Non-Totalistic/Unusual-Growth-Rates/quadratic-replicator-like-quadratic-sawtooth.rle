@@ -1,0 +1,7 @@
+#N quadratic-replicator-like-quadratic-sawtooth.rle
+#O "jimmyChen2013", 25 September 2018
+#C Four "Whitespace" cores interact to create a quadratic sawtooth
+#C which superficially resembles a quadratic replicator.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=64010#p64010
+x = 6, y = 5, rule = B2ci3aiy4e5ce6c7c8/S1e2ce3acein4ceit5e6cei7c8
+o2$o2$3bobo!

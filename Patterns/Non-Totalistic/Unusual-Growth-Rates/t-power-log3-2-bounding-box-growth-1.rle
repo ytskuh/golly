@@ -1,0 +1,5 @@
+#N t-power-log3-2-bounding-box-growth-1.rle
+#O "AforAmpere", 29 June 2021
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=132788#p132788
+x = 2, y = 3, rule = B2e3ij4cet5y6c/S012ac3j4ci5ey
+o$bo$o!

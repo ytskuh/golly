@@ -1,0 +1,7 @@
+#N plastic-number-width-growth.rle
+#O "AforAmpere", 4 October 2021
+#C The width at time t is around log_p(t),
+#C where p is the plastic number.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=136288#p136288
+x = 2, y = 4, rule = B2k3aijn4aw5r6ik/S012ak3anr4a5j
+o$bo$bo$o!

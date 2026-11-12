@@ -1,0 +1,11 @@
+#N noninteger-replication-order.rle
+#O wwei23, 23 October 2019
+#C This anomalous fractal does not appear to contain an integer
+#C   count of sub-units at any scale, unlike the other fractals we've
+#C   seen so far.
+#C Reference:
+#C   https://conwaylife.com/forums/viewtopic.php?p=84439#p84439
+x = 29, y = 24, rule = B2e3aiky4jnqtwz5cjqry6aei/S1c2-k3ajry4cjkrt5-eqr6i
+7b3o9b3o$8bo11bo$8bo11bo$7b3o9b3o$12bo3bo$11bobobobo$11bobobobo$12bo3b
+o7$8bo11bo$7b3o9b3o$7bobo9bobo2$12bo3bo3$b2o23b2o$o2bo21bo2bo$b2o8b2o
+3b2o8b2o!

@@ -1,0 +1,8 @@
+#N bosco-analogue.rle
+#O "AforAmpere", 7 February 2019
+#C This rule contains a period-52 sparking oscillator very similar to Bosco.
+#C Unlike Bosco, it rotates 180 degrees around the center of a cell (n.f), rather
+#C   than 180 degrees around a vertex of the grid (n.v).
+#C No guns have been constructed with this oscillator as of March 2024.
+x = 11, y = 12, rule = R5,C2,S33-52,B31-42
+4b2o$3b5o$2b7o$2b8o$b3o2b5o$o6b4o$o7b3o$bo5b4o$bo4b5o$2b8o$3b3o$5bo!

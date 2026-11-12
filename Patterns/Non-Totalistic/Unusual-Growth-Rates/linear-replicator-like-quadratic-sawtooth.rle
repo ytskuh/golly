@@ -1,0 +1,5 @@
+#N linear-replicator-like-quadratic-sawtooth.rle
+#C Two "Whitespace" cores interact to create a quadratic sawtooth
+#C which superficially resembles a linear replicator.
+x = 14, y = 3, rule = B3aiy4ew5ace6c7c8/S2-ai3-jkq4ceirt5ce6-ak7c8
+bo10bo$3o8b3o$bo10bo!

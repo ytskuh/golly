@@ -1,0 +1,9 @@
+#N bosco-ship.rle
+#O "Moosey", 12 February 2019
+#C Adding a B81 translation to Bosco's Rule causes Bosco to become the predecessor
+#C   of a diagonal flipping spaceship very similar to Bosco.
+#C The rule R5,C0,S33-57,B34-45,81-82,84-85 yields yet another spaceship from Bosco.
+#C Reference:
+#C   https://conwaylife.com/forums/viewtopic.php?p=70511#p70511
+x = 62, y = 42, rule = R5,C0,S33-57,B34-45,81
+6bo$4b5o$2b5ob2o$b5o3b2o$b4o5bo$4o5b3o$b4o3b3o$b5ob4o$2b8o$3b7o$4b5o!

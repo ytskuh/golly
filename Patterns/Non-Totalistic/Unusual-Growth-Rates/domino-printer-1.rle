@@ -1,0 +1,7 @@
+#N domino-printer-1.rle
+#O "AforAmpere", 4 October 2021
+#C The ratio between identical successive pushes forward
+#C appears to be roughly 1.722083 for this pattern.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=136288#p136288
+x = 2, y = 4, rule = B2e3aeij4r5ry6k/S1e2k3a4a5iq6ac
+o$bo$bo$o!

@@ -1,0 +1,9 @@
+#N p38-counting-cross.rle
+#O "toroidalet", 3 November 2017
+#C Two cells in this rule evolve into a cross-shaped fourfold
+#C period-38 binary counter.
+#C For a similar counter with a dramatically higher period,
+#C see "p149262-counting-cross.rle".
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=52616#p52616
+x = 3, y = 1, rule = B2ci3aer4eiqr5i6cik8/S01c2cn3ek4nqtw5aekry6ekn78
+obo!

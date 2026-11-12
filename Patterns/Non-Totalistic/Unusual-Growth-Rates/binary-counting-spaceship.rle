@@ -1,0 +1,10 @@
+#N binary-counting-spaceship.rle
+#O Peter Naszvadi, 2 October 2020
+#C A binary counter that manifests as a rake producing
+#C spaceships which move in the same direction and at
+#C the same speed as itself. The production reaction
+#C creates and deletes these spaceships as a binary
+#C counter.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=105390#p105390
+x = 8, y = 24, rule = B3-ck4jqz5c/S2aek3ijnqr4ciy5ce6e7c
+3b2o$4bo$2b3o16$b2o2bo$o3bob2o$bo5bo$3bo3bo$4b3o$4bo!

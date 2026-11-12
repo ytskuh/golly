@@ -1,0 +1,13 @@
+#N two-cell-slow-ship.rle
+#O "AforAmpere", 9 August 2024
+#C
+#C In this non-isotropic rule, two spaced cells will translate
+#C upwards at a rate of one grid space per 2765 generations.
+#C
+#C As of 2024, this is the current record holder for the slowest
+#C spaceship in a 2-state, range-1, non-B0 rule with two cells.
+#C
+#C Reference:
+#C https://conwaylife.com/forums/viewtopic.php?p=191669#p191669
+x = 3, y = 1, rule = MAPBTLfc2Ai8i8UK5Q1gWgZoDJA66gxIUQMSZrCJAISZwQRRvaIBELhsBYg/swVwWyBUAiHMJlRAK6KFTDBxABCqA
+obo!

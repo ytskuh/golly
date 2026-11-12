@@ -1,0 +1,7 @@
+#N unconventional-sqrt-growth.rle
+#O "AforAmpere", 11 September 2023
+#C This pattern's growth is roughly bounded by 1.8sqrt(t), however
+#C its population graph produces a very interesting figure.
+#C Reference: https://discord.com/channels/357922255553953794/370571046971244545/1150644659169788094
+x = 2, y = 3, rule = B2ek3aijny4cet6ci/S012ac3in4ci5e6i
+o$bo$o!

@@ -1,0 +1,7 @@
+#N t-power-log6-2-growth.rle
+#O "AforAmpere", 11 September 2023
+#C This pattern closely resembles the sqrt replicator from
+#C B36/S245 in its evolution, with minor differences.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=166802#p166802
+x = 2, y = 3, rule = B2cei3an4ait6c7e8/S01e2ae3i4ae5iy6i7e8
+o$bo$o!

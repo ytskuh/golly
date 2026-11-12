@@ -1,0 +1,10 @@
+#N takagi-growth.rle
+#O "GUYTU6J", 5 February 2020
+#C This small rotating pattern emits a series of linear wickstretchers that
+#C bump into each other, causing a rather unusual growth rate. The
+#C population plot of this pattern will resemble a Blancmange fractal
+#C curve.
+#C See also whitespace-puffer.rle for a quadratic equivalent.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=88851#p88851
+x = 7, y = 9, rule = B2n3aikq4iq/S2-i3-a4i
+2b3o$2bobo$2bo2b2o$3bo2bo$4b3o$3bo$2bo$obo$3o!

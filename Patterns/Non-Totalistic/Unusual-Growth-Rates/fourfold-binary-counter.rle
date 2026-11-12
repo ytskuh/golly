@@ -1,0 +1,8 @@
+#N fourfold-binary-counter.rle
+#O "Saka", 2 May 2021
+#C A small natural binary counter with four radial branches.
+#C Reference: https://discord.com/channels/357922255553953794/370571046971244545/838295882759143434
+x = 16, y = 16, rule = B2e3aeijk4cejwz5cjkqr6an7c/S1c2-c3-aen4-eqr5aknr6ack7c8
+o2bobob2obobo2bo$b4o3bo2bob2o$5b4ob3obo$b3o2b6obobo$b2obob3o2b2obo$b3o
+b4o3bo2bo$2bo4b2o$bobob2o2b3obo$o3bo2b2o3b2o$2bo2bo2bobo2b3o$o4b7o2bo$
+ob4ob2o2bo3bo$b2ob3o2bob3o$6bo2bobob3o$2bobob3o2b3obo$2bob2obo3b3obo!

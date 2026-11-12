@@ -1,0 +1,6 @@
+#N polynomial-log-counter.rle
+#O "AforAmpere", 11 September 2023
+#C Grows according to 2*log_q(t), where q^3 - q^2 - 1 = 0.
+#C Reference: https://discord.com/channels/357922255553953794/370571046971244545/1150650548098437160
+x = 2, y = 3, rule = B2e3ijn4cer6c/S012ac3n4cei5ey
+o$bo$o!

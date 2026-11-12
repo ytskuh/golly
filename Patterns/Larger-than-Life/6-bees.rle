@@ -1,0 +1,15 @@
+#N 6-bees.rle
+#O Connor Steppie, 25 July 2020
+#C
+#C This "Bees" (hexagonal-grid "Bugs") rule contains, among others, six
+#C elementary spaceships: five orthogonal and one diagonal.
+#C
+#C Reference:
+#C https://conwaylife.com/forums/viewtopic.php?p=101066#p101066
+x = 159, y = 11, rule = R5,C2,S26-43,57,B26-33,NH
+28bo119b4o$b3o23b5o28b4o26b3o26b3o25b7o$6o20b8o26b6o23b6o23b6o23b9o$7o
+19b9o25b7o22b8o21b8o21b10o$8o19b4ob5o23b8o21b9o20b9o21b3o3b4o$4ob4o18b
+3o4b3o24b2ob5o21b2o2b4o21b3o2b4o21b2o4b3o$b2o4b2o19b2o4b4o23b2o3b3o21b
+2o3b3o21b2o4b3o22b2o4b3o$2b2o3b2o20bo5b3o28b3o22bo4b3o21bo4b4o22bo4b3o
+$3bo4bo21bo4b4o23bo3b3o22bo4b3o22bo4b3o22bo4b3o$4bo3bo22bo3b4o24b2o2bo
+24b2o2b2o24bo3b3o24bo2b3o$5b4o23b6o27b2o27b3o26b5o27b2o!

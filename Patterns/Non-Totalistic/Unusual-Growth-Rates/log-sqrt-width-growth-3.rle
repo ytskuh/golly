@@ -1,0 +1,6 @@
+#N log-sqrt-width-growth-3.rle
+#O "AforAmpere", 27 October 2021
+#C The width at time t is around 8*log_((5+sqrt(17))/2)(t)+3.85.
+#C Reference: https://conwaylife.com/forums/viewtopic.php?p=136288#p136288
+x = 1, y = 4, rule = B2e3ainq4a/S12ik3j4a6a
+o$o$o$o!
