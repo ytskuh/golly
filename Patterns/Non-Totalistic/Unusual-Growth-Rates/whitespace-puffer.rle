@@ -17,10 +17,8 @@
 #C x = 25, y = 6, rule = B3ai4ce5c6c7c/S3acein4et5i6cei78
 #C 23bo$12bo2bo8bo$11b4o6b4o$12bo2bo8bo$2o21bo$2o!
 #C
-#C Compare with another pattern where outputs are linear wick-
+#C Compare with takagi-growth.rle where outputs are linear wick-
 #C stretchers instead of quadratic spacefillers, where the population
-#C versus generation curve will converge to a Takagi function
-#C as pointed out in this post:
-#C https://conwaylife.com/forums/viewtopic.php?p=90367#p90367
+#C versus generation curve will converge to a Takagi function.
 x = 11, y = 3, rule = B2i3-cejk4ceky5ci6c7c/S3acein4etyz5i6cei78
 bo7b2o$3o5b3o$bo7b2o!
