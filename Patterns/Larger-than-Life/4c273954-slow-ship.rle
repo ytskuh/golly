@@ -4,10 +4,13 @@
 #C The following is a spaceship which moves orthogonally with a
 #C displacement of four cells every 273 954 generations, or
 #C approximately one cell every 68488.5 generations.
-#C This makes this spaceship the slowest known spaceship as of
-#C February 2023, excluding spaceships made with universal construction
-#C technology, rules with adjustable-speed spaceship families, or
-#C custom rules specifically created to harbor slow spaceships.
+#C
+#C This was the slowest known spaceship, excluding spaceships 
+#C made with universal construction technology, rules with
+#C adjustable-speed spaceship families, or custom rules specifically
+#C created to harbor slow spaceships, until July 2024 at the
+#C latest, when a 2c/4458264 spaceship was discovered in a
+#C a range-1 isotropic rule.
 #C
 #C References:
 #C https://conwaylife.com/forums/viewtopic.php?p=69941#p69941

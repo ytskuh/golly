@@ -1,13 +1,14 @@
 #N single-cell-slow-ship.rle
-#O gameoflifemaniac and "blah", 31 May 2020
+#O "AforAmpere", 31 May 2026
 #C
 #C In this non-isotropic B0 rule, a single cell will translate to the
-#C right at a rate of one grid space per 714 generations.
+#C right at a rate of one grid space per 1444 generations.
 #C
-#C As of 2023, this is the current record holder for the slowest
+#C As of 2026, this is the current record holder for the slowest
 #C spaceship in a 2-state, range-1 rule with only one cell.
 #C
-#C Reference:
-#C https://conwaylife.com/forums/viewtopic.php?f=11&t=3089&p=98128#p98128
-x = 1, y = 1, rule = MAPhhPAmAASJAQAQgAACQCAAAEAAACAABEACAAEAAAAAAAAAQAAEAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+#C References:
+#C https://conwaylife.com/forums/viewtopic.php?p=188479#p188479
+#C https://discord.com/channels/357922255553953794/370571046971244545/1510676567259615323
+x = 1, y = 1, rule = MAPhhPAmAATJAQAQhUHKSP1BAEAGAaDjzdSCAMRAHM7VSgAAQIqEAcESA4ACyRAL7f/UABHTxL3BCAEAQENARMBAA
 o!

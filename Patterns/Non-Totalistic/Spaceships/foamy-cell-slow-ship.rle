@@ -1,0 +1,16 @@
+#N foamy-cell-slow-ship.rle
+#O "NimbleRogue", 13 August 2025
+#C
+#C This spaceship from the "Obelisk" rulespace moves at a
+#C speed of 2c/3388929125 orthogonal. This simplifies to
+#C to a speed of one cell per 1694464562.5 generations.
+#C
+#C As of 2026, this is the current record holder for the slowest
+#C spaceship in a 2-state rule, excluding adjustable spaceships.
+#C
+#C Reference:
+#C https://conwaylife.com/forums/viewtopic.php?p=216034#p216034
+x = 83, y = 7, rule = B2n3aijqr4e5ikqy6a7/S2-k3cejk4-anqt5cery6-e78
+4b2o54bo$bo16b2o3b2o27b2o$83o$obobobobobobobobobobobobobobobobobobobob
+obobobobobobobobobobobobobobobobobobobobobo$83o$bo16b2o3b2o27b2o$4b2o
+54bo!
